@@ -9,6 +9,7 @@ Use this pack to bootstrap or refresh agent docs in any Meavo project (Next.js a
 | Path | Purpose |
 |------|---------|
 | [STANDARDS.md](STANDARDS.md) | **Org-wide conventions** — unified database, UI (mobile + desktop), security, and architecture rules every repo must follow |
+| [PROMPT.md](PROMPT.md) | **Copy-paste prompt** for repo-specific agents to bootstrap their own instruction files |
 | [INSTRUCTIONS.md](INSTRUCTIONS.md) | **Start here** — human + agent workflow for adopting templates in a target repo |
 | [BOOTSTRAP.md](BOOTSTRAP.md) | Agent-only playbook: discover repo → fill templates → verify |
 | [CHECKLIST.md](CHECKLIST.md) | Post-bootstrap verification (manual) |
@@ -32,7 +33,7 @@ Then open `AGENTS.md` and the `docs/` files and replace every `<!-- FILL: ... --
 
 ## Quick start (Cursor / Cloud Agent)
 
-Paste into the agent:
+Paste the full prompt from **[PROMPT.md](PROMPT.md)** into an agent session in the target repo. Short version:
 
 ```
 Bootstrap agent instruction files for this repo using meavo-booths/meavo-agent-templates.
