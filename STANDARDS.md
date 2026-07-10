@@ -17,9 +17,10 @@ One Neon Postgres database shared by all apps. Gateway owns identity; satellite 
 | Assembly | `assembly` | `assembly.meavo.app` | Questionnaires, submissions |
 | Sales | `sales` | `sales.meavo.app` | Deals, clients, products |
 | MRP | `meavo-mrp` | `mrp.meavo.app` | Materials, stock movements, invoices |
-| RP | `meavo-rp` | `rp.meavo.app` | RP-specific data |
-| Clock | `meavo-clock` | `clock.meavo.app` | Clock-in / time tracking |
-| Tasks | `meavo-tasks` | — | Task tracking |
+| Factory | `Meavo-Factory` (private) | `factory.meavo.app` | Production batches, stations |
+| Tasks | `meavo-tasks` | `tasks.meavo.app` | Task tracking |
+| RP | `meavo-rp` | `rp.meavo.app` (planned — currently default `.vercel.app` URL) | RP-specific data |
+| Clock | `meavo-clock` | `clock.meavo.app` (planned — currently default `.vercel.app` URL) | Clock-in / time tracking |
 
 Shared packages: `@meavo/db` (canonical Prisma schema — [meavo-db](https://github.com/meavo-booths/meavo-db)) and `@meavo/navigation` (shared top nav + tool switcher — [meavo-navigation](https://github.com/meavo-booths/meavo-navigation)).
 
