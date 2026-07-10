@@ -2,19 +2,20 @@
 
 Org-wide template pack for **AI coding agent instruction files** in [meavo-booths](https://github.com/meavo-booths) repositories.
 
-> **Location:** This folder is org-shared tooling — not part of the meavo-rp runtime. Preferred home is a dedicated repo: `github.com/meavo-booths/meavo-agent-templates`. An org admin can create that repo and move this directory there unchanged.
-
 Use this pack to bootstrap or refresh agent docs in any Meavo project (Next.js apps, shared packages, cron workers, legacy GAS reference trees, etc.) without copying from a sibling app like `meavo-rp`.
 
 ## What's in the pack
 
 | Path | Purpose |
 |------|---------|
+| [STANDARDS.md](STANDARDS.md) | **Org-wide conventions** — unified database, UI (mobile + desktop), security, and architecture rules every repo must follow |
 | [INSTRUCTIONS.md](INSTRUCTIONS.md) | **Start here** — human + agent workflow for adopting templates in a target repo |
 | [BOOTSTRAP.md](BOOTSTRAP.md) | Agent-only playbook: discover repo → fill templates → verify |
-| [CHECKLIST.md](CHECKLIST.md) | Post-bootstrap verification |
+| [CHECKLIST.md](CHECKLIST.md) | Post-bootstrap verification (manual) |
 | [templates/](templates/) | Blank files with `<!-- FILL: ... -->` placeholders |
+| [examples/](examples/) | A fully filled `AGENTS.md` example + pointers to reference repos |
 | [scripts/bootstrap-agent-docs.sh](scripts/bootstrap-agent-docs.sh) | Copies templates into a target repo (strips `.template` suffix) |
+| [scripts/verify-agent-docs.sh](scripts/verify-agent-docs.sh) | Automated post-fill verification (placeholders, paths, rule frontmatter) |
 
 ## Quick start (human)
 
@@ -35,24 +36,23 @@ Paste into the agent:
 
 ```
 Bootstrap agent instruction files for this repo using meavo-booths/meavo-agent-templates.
-Follow BOOTSTRAP.md in that repo. Do not copy meavo-rp-specific content — discover this repo's stack, layout, and domain from the codebase.
+Follow BOOTSTRAP.md in that repo, and apply the org-wide rules from its STANDARDS.md.
+Do not copy meavo-rp-specific content — discover this repo's stack, layout, and domain from the codebase.
 ```
 
 ## Design principles
 
 1. **Task-oriented** — agents need “where to change X”, not essays.
-2. **Layered** — `AGENTS.md` (short) → `docs/*` (deep) → `.cursor/rules/*` (enforced).
-3. **Repo-specific** — templates are blanks; each app fills in its own stack, paths, and business rules.
+2. **Layered** — `STANDARDS.md` (org constants) → `AGENTS.md` (short) → `docs/*` (deep) → `.cursor/rules/*` (enforced).
+3. **Repo-specific** — templates are blanks; each app fills in its own stack, paths, and business rules. Org-wide constants come from [STANDARDS.md](STANDARDS.md), not from guessing.
 4. **Single source of truth** — link between files; don't duplicate long sections.
 5. **Minimal diff discipline** — encoded in `CONTRIBUTING.md` and cursor rules.
 
-## Related Meavo conventions
+## Org-wide conventions
 
-- Database schema changes live in **[meavo-db](https://github.com/meavo-booths/meavo-db)** unless the repo is DB-only.
-- Shared UI header: `@meavo/navigation` (Next.js apps).
-- Auth pattern: NextAuth v5 + gateway `User` / `ToolCardAccess` (most internal apps).
+[STANDARDS.md](STANDARDS.md) is the canonical list — database ownership (meavo-db), UI system (Tailwind + in-house kit + `@meavo/navigation`, mobile-first), security (NextAuth v5, tool-card gating, cron secrets, headers), and mutation patterns. The deep-dive reference implementation is [meavo-gateway's AGENTS.md](https://github.com/meavo-booths/meavo-gateway/blob/main/AGENTS.md).
 
-These are hints for filling templates — not every repo uses all of them.
+Not every repo uses all of it (e.g. `meavo-db`, `meavo-navigation`, legacy JS apps) — mark deviations explicitly in the target repo's docs.
 
 ## Maintaining this pack
 

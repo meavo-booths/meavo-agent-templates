@@ -11,11 +11,12 @@
 ## Rules
 
 1. **Discover first, write second** — never guess paths or stack from sibling repos.
-2. **General templates only** — source blanks from `meavo-booths/meavo-agent-templates`; do not clone `meavo-rp` docs wholesale.
-3. **Short entry, deep links** — `AGENTS.md` stays brief; details go in `docs/`.
-4. **Delete or mark N/A** — remove sections that don't apply (e.g. `data-model.md` for a CLI tool with no DB).
-5. **No secrets** — document env var *names* from `.env.example`, never values.
-6. **Minimal scope** — this task is documentation only unless the user asked for code changes too.
+2. **Org standards are constants** — read [STANDARDS.md](STANDARDS.md) and apply its database, UI, and security rules to every app repo; discovery fills the repo-specific blanks. If the repo deviates (older stack, no UI, schema owner), document the deviation explicitly.
+3. **General templates only** — source blanks from `meavo-booths/meavo-agent-templates`; do not clone `meavo-rp` docs wholesale.
+4. **Short entry, deep links** — `AGENTS.md` stays brief; details go in `docs/`.
+5. **Delete or mark N/A** — remove sections that don't apply (e.g. `data-model.md` for a CLI tool with no DB).
+6. **No secrets** — document env var *names* from `.env.example`, never values.
+7. **Minimal scope** — this task is documentation only unless the user asked for code changes too.
 
 ---
 
@@ -28,7 +29,8 @@
    - If `meavo-agent-templates` is not local: `git clone https://github.com/meavo-booths/meavo-agent-templates.git /tmp/meavo-agent-templates`
    - Run: `/tmp/meavo-agent-templates/scripts/bootstrap-agent-docs.sh .`
    - Use `--force` only if replacing stale docs and the user explicitly asked.
-3. Read existing `README.md`, `package.json` (or equivalent), and top-level `src/` layout.
+3. Read `STANDARDS.md` in `meavo-agent-templates` — the org-wide database, UI, and security conventions you must encode into the filled docs.
+4. Read existing `README.md`, `package.json` (or equivalent), and top-level `src/` layout.
 
 ### Phase B — Discovery checklist
 
@@ -60,14 +62,16 @@ Task → file map: <!-- at least 8 rows -->
 |-------|------|--------|
 | 1 | `AGENTS.md` | Replace all `<!-- FILL: ... -->` |
 | 2 | `.cursor/rules/core.mdc` | Stack, layout, do-nots, `alwaysApply: true` |
-| 3 | `.cursor/rules/domain.mdc` | Skip or delete if no domain layer; else set `globs` |
-| 4 | `.cursor/rules/api.mdc` | Skip or delete if no API; else set `globs` |
-| 5 | `docs/architecture.md` | Full stack + data flow |
-| 6 | `docs/domain.md` | Skip if no business domain (e.g. pure utility lib) |
-| 7 | `docs/data-model.md` | Skip if no persistence |
-| 8 | `CONTRIBUTING.md` | Match team's actual PR process |
-| 9 | `.cursorignore` | Match repo artifacts |
-| 10 | `README.md` | Add docs table rows; fix broken agent links |
+| 3 | `.cursor/rules/security.mdc` | Fill auth gate + tool-card ID from STANDARDS.md §4; delete only for pure libraries |
+| 4 | `.cursor/rules/ui.mdc` | Fill globs + deviations from STANDARDS.md §5; delete if repo has no UI |
+| 5 | `.cursor/rules/domain.mdc` | Skip or delete if no domain layer; else set `globs` |
+| 6 | `.cursor/rules/api.mdc` | Skip or delete if no API; else set `globs` |
+| 7 | `docs/architecture.md` | Full stack + data flow |
+| 8 | `docs/domain.md` | Skip if no business domain (e.g. pure utility lib) |
+| 9 | `docs/data-model.md` | Skip if no persistence |
+| 10 | `CONTRIBUTING.md` | Match team's actual PR process |
+| 11 | `.cursorignore` | Match repo artifacts |
+| 12 | `README.md` | Add docs table rows; fix broken agent links |
 
 **Placeholder syntax:** replace entire `<!-- FILL: ... -->` blocks including the comment. Remove optional sections marked `<!-- OPTIONAL: ... -->` when not applicable.
 
@@ -82,7 +86,13 @@ Or delete if fully superseded.
 
 ### Phase D — Quality bar
 
-Before opening PR, verify:
+Run the automated checker first:
+
+```bash
+/tmp/meavo-agent-templates/scripts/verify-agent-docs.sh .
+```
+
+Then before opening PR, verify:
 
 - [ ] Every path in `AGENTS.md` task table exists on disk
 - [ ] Every `Do NOT` is enforceable and true for this repo
@@ -90,6 +100,7 @@ Before opening PR, verify:
 - [ ] No `<!-- FILL:` placeholders remain (grep the repo)
 - [ ] `docs/domain.md` mutation map names real modules
 - [ ] Cursor rule `globs` match actual directories
+- [ ] STANDARDS.md rules applied (DB ownership, UI kit + mobile-first, security layers) or deviations documented
 - [ ] [CHECKLIST.md](CHECKLIST.md) passes
 
 ### Phase E — PR
@@ -102,13 +113,14 @@ Before opening PR, verify:
 
 ## Repo-type hints
 
-| Repo type | Emphasize | Skip |
-|-----------|-----------|------|
-| Next.js App Router app | `core.mdc`, `domain.mdc`, `api.mdc`, all docs | — |
-| Shared npm package (`@meavo/*`) | Export map, build/publish, consumer repos | `domain.md` if no business rules |
-| meavo-db | `data-model.md` is primary; schema migration rules | UI/domain docs |
-| Cron-only / worker | `api.mdc` → cron routes; architecture data flow | personas |
-| Legacy reference tree | Separate glob rules under `legacy-*/` | Don't document as live app |
+| Repo type | Examples | Emphasize | Skip |
+|-----------|----------|-----------|------|
+| Next.js App Router app | `meavo-gateway`, `hols`, `assembly`, `sales`, `meavo-mrp` | `core.mdc`, `security.mdc`, `ui.mdc`, `domain.mdc`, `api.mdc`, all docs | — |
+| Shared npm package (`@meavo/*`) | `meavo-navigation` | Export map, build/publish, consumer repos, release tagging | `ui.mdc` globs (it IS the UI), `domain.md` if no business rules |
+| Schema owner | `meavo-db` | `data-model.md` is primary; migration-safety rules (shared DB!) | UI/domain docs, `ui.mdc`, most of `security.mdc` |
+| Cron-only / worker | — | `api.mdc` → cron routes; `security.mdc` cron secret; architecture data flow | personas, `ui.mdc` |
+| Legacy / pre-standard app | `meavo-rp`, `meavo-clock` | Document actual state; note deviations from STANDARDS.md | Don't pretend it follows the new-app standard |
+| Legacy reference tree | `legacy-gas/` subtrees | Separate glob rules under `legacy-*/` (`--with-legacy`) | Don't document as live app |
 
 ---
 

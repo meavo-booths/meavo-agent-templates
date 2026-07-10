@@ -8,11 +8,11 @@ TEMPLATE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TEMPLATES="$TEMPLATE_ROOT/templates"
 
 usage() {
-  echo "Usage: $0 <target-repo-root> [--force] [--no-data-model]"
+  echo "Usage: $0 <target-repo-root> [--force] [--no-data-model] [--with-legacy]"
   echo ""
   echo "  --force          Overwrite existing agent doc files"
-  echo "  --no-data-model  Skip docs/data-model.md (non-DB repos)
-  --with-legacy    Also copy legacy.mdc (off by default — opt in via manual copy)"
+  echo "  --no-data-model  Skip docs/data-model.md (non-DB repos)"
+  echo "  --with-legacy    Also copy legacy.mdc (for repos with a read-only legacy subtree)"
   exit 1
 }
 
@@ -64,6 +64,8 @@ copy_template ".cursorignore.template" ".cursorignore"
 copy_template ".cursor/rules/core.mdc.template" ".cursor/rules/core.mdc"
 copy_template ".cursor/rules/domain.mdc.template" ".cursor/rules/domain.mdc"
 copy_template ".cursor/rules/api.mdc.template" ".cursor/rules/api.mdc"
+copy_template ".cursor/rules/ui.mdc.template" ".cursor/rules/ui.mdc"
+copy_template ".cursor/rules/security.mdc.template" ".cursor/rules/security.mdc"
 if [[ "$WITH_LEGACY" -eq 1 ]]; then
   copy_template ".cursor/rules/legacy.mdc.template" ".cursor/rules/legacy.mdc"
 fi
@@ -76,7 +78,8 @@ fi
 
 echo ""
 echo "Done. Next steps:"
-echo "  1. Replace all <!-- FILL: ... --> placeholders (see INSTRUCTIONS.md)"
-echo "  2. Delete or skip sections that don't apply"
-echo "  3. Update README.md documentation links"
-echo "  4. Run CHECKLIST.md before merging"
+echo "  1. Read STANDARDS.md — copy applicable org-wide rules into the filled docs"
+echo "  2. Replace all <!-- FILL: ... --> placeholders (see INSTRUCTIONS.md)"
+echo "  3. Delete or skip sections that don't apply"
+echo "  4. Update README.md documentation links"
+echo "  5. Run scripts/verify-agent-docs.sh and CHECKLIST.md before merging"

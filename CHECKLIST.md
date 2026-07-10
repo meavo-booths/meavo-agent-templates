@@ -2,10 +2,14 @@
 
 Run after filling templates in a target repo.
 
+**First:** run the automated half — `scripts/verify-agent-docs.sh <target-repo>` — then work through the manual items below.
+
 ## Files exist
 
 - [ ] `AGENTS.md`
 - [ ] `.cursor/rules/core.mdc` with `alwaysApply: true`
+- [ ] `.cursor/rules/security.mdc` with `alwaysApply: true` (apps; consciously deleted for pure libraries)
+- [ ] `.cursor/rules/ui.mdc` (apps with UI; consciously deleted otherwise)
 - [ ] `.cursorignore`
 - [ ] `CONTRIBUTING.md` (or consciously skipped with reason in PR)
 - [ ] `docs/architecture.md` (or N/A noted in PR)
@@ -26,6 +30,13 @@ Run after filling templates in a target repo.
 - [ ] No contradictory duplicate of `.cursorrules` (merged or removed)
 - [ ] `domain.mdc` globs match actual domain directory (or file deleted)
 - [ ] `api.mdc` globs match routes/actions directory (or file deleted)
+
+## Org standards (STANDARDS.md)
+
+- [ ] DB: schema ownership points at `meavo-db`; `db:push` disabled or warned against
+- [ ] Security: auth-at-every-layer rule present; tool-card ID env var named; cron secret documented
+- [ ] UI: in-house kit + `@meavo/navigation` documented; mobile-first responsive rules present
+- [ ] Deviations from STANDARDS.md are stated explicitly (not silently omitted)
 
 ## Accuracy spot-checks
 

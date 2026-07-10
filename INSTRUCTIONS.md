@@ -28,12 +28,17 @@ The script copies:
 - `AGENTS.md`
 - `CONTRIBUTING.md`
 - `.cursorignore`
-- `.cursor/rules/core.mdc`, `domain.mdc`, `api.mdc`
+- `.cursor/rules/core.mdc`, `domain.mdc`, `api.mdc`, `ui.mdc`, `security.mdc`
 - `docs/architecture.md`, `domain.md`, `data-model.md` (skip `data-model.md` if no database)
+- `--with-legacy` adds `.cursor/rules/legacy.mdc` for repos with a read-only legacy subtree
 
 **It will not overwrite** existing files unless you pass `--force`.
 
-## Step 2 — Discover the repo (before writing prose)
+## Step 2 — Read the org standards
+
+Read [STANDARDS.md](STANDARDS.md) before filling anything. It defines the unified database, UI (mobile + desktop), and security conventions shared across all meavo-booths repos. Copy applicable rules into the target repo's docs verbatim; document deviations explicitly.
+
+## Step 3 — Discover the repo (before writing prose)
 
 Agents and humans should read the codebase first. Minimum discovery:
 
@@ -50,11 +55,11 @@ Agents and humans should read the codebase first. Minimum discovery:
 
 Take notes — you'll paste findings into template placeholders.
 
-## Step 3 — Fill templates (priority order)
+## Step 4 — Fill templates (priority order)
 
-Work top-down. Stop when a section doesn't apply and mark it `N/A` or delete it.
+Work top-down. Stop when a section doesn't apply and mark it `N/A` or delete it. Pull org constants (stack, DB rules, UI system, security patterns) from [STANDARDS.md](STANDARDS.md); pull repo specifics from your Step 3 discovery. See [examples/AGENTS.example.md](examples/AGENTS.example.md) for the quality bar.
 
-### 3.1 `AGENTS.md` (required)
+### 4.1 `AGENTS.md` (required)
 
 Keep under **~150 lines**. Must include:
 
@@ -65,41 +70,49 @@ Keep under **~150 lines**. Must include:
 - Dev commands (`install`, `dev`, `test`, `lint`, `build`)
 - Links to `docs/` and `.cursor/rules/`
 
-### 3.2 `.cursor/rules/core.mdc` (required)
+### 4.2 `.cursor/rules/core.mdc` (required)
 
 `alwaysApply: true` — stack, layout table, hard guardrails, data-flow one-liner.
 
 Migrate any legacy root `.cursorrules` content here, then **delete or slim** `.cursorrules` to avoid duplicate/conflicting rules. Point `.cursorrules` at `.cursor/rules/` with one line if your team still expects the file.
 
-### 3.3 `.cursor/rules/domain.mdc` (if `lib/domain/` or equivalent exists)
+### 4.3 `.cursor/rules/security.mdc` (required for apps; delete for pure libraries)
+
+`alwaysApply: true` — org security standard (STANDARDS.md §4) with this repo's auth gate and tool-card ID filled in.
+
+### 4.4 `.cursor/rules/ui.mdc` (required for apps with UI; delete otherwise)
+
+Glob-scoped to `src/app/**` and `src/components/**` — org UI standard (STANDARDS.md §5): in-house kit, brand palette, mobile-first responsive rules.
+
+### 4.5 `.cursor/rules/domain.mdc` (if `lib/domain/` or equivalent exists)
 
 Glob-scoped rules for business logic: thin handlers, mutation patterns, side effects (sheet sync, webhooks, etc.).
 
-### 3.4 `.cursor/rules/api.mdc` (if HTTP API / Server Actions / routes exist)
+### 4.6 `.cursor/rules/api.mdc` (if HTTP API / Server Actions / routes exist)
 
 Glob-scoped: auth on every route, cron secret, validation, error shape.
 
-### 3.5 `docs/architecture.md` (recommended for non-trivial apps)
+### 4.7 `docs/architecture.md` (recommended for non-trivial apps)
 
 Stack, sibling repos, folder map, data flow diagram, cron/job list, env vars overview.
 
-### 3.6 `docs/domain.md` (recommended when business rules exist)
+### 4.8 `docs/domain.md` (recommended when business rules exist)
 
 Glossary, roles/permissions, status values, mutation map, legacy port index.
 
-### 3.7 `docs/data-model.md` (database repos only)
+### 4.9 `docs/data-model.md` (database repos only)
 
 Schema ownership (usually **meavo-db**), entity diagram, field notes agents can't infer.
 
-### 3.8 `CONTRIBUTING.md` (recommended)
+### 4.10 `CONTRIBUTING.md` (recommended)
 
 Branch naming, PR checklist, test expectations, cross-repo bump process.
 
-### 3.9 `.cursorignore` (recommended)
+### 4.11 `.cursorignore` (recommended)
 
 Tune for the repo — exclude build dirs, `node_modules`, generated code, large fixtures.
 
-## Step 4 — Wire up entry points
+## Step 5 — Wire up entry points
 
 Update the target repo's `README.md` documentation table:
 
@@ -111,11 +124,17 @@ Update the target repo's `README.md` documentation table:
 
 Remove stale references (e.g. pointing at `.mdc` files that don't exist).
 
-## Step 5 — Verify
+## Step 6 — Verify
 
-Run through [CHECKLIST.md](CHECKLIST.md). Open a PR titled e.g. `docs: add agent instruction files`.
+Run the automated checker from the target repo root, then the manual checklist:
 
-## Step 6 — Keep docs alive
+```bash
+/tmp/meavo-agent-templates/scripts/verify-agent-docs.sh .
+```
+
+Then run through [CHECKLIST.md](CHECKLIST.md). Open a PR titled e.g. `docs: add agent instruction files`.
+
+## Step 7 — Keep docs alive
 
 Update agent docs in the **same PR** when you:
 
@@ -145,8 +164,9 @@ For repos with `packages/*`:
 Use this prompt in the target repo:
 
 ```
-Read meavo-booths/meavo-agent-templates BOOTSTRAP.md and bootstrap agent docs for THIS repo.
+Read meavo-booths/meavo-agent-templates BOOTSTRAP.md and STANDARDS.md, then bootstrap agent docs for THIS repo.
 Discover stack and layout from the codebase. Fill all <!-- FILL: --> placeholders.
+Apply org-wide rules from STANDARDS.md; mark any deviations explicitly.
 Do not copy content from other Meavo repos verbatim. Open a PR when done.
-Use CHECKLIST.md to verify.
+Run scripts/verify-agent-docs.sh and CHECKLIST.md to verify.
 ```
