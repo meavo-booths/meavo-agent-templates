@@ -19,6 +19,7 @@ One Neon Postgres database shared by all apps. Gateway owns identity; satellite 
 | MRP | `meavo-mrp` | `mrp.meavo.app` | Materials, stock movements, invoices |
 | Factory | `Meavo-Factory` (private) | `factory.meavo.app` | Production batches, stations |
 | Tasks | `meavo-tasks` | `tasks.meavo.app` | Task tracking |
+| Requests | `meavo-tickets` | `requests.meavo.app` | Feature requests & voting |
 | RP | `meavo-rp` | `rp.meavo.app` | RP-specific data |
 | Clock | `meavo-clock` | `clock.meavo.app` | Clock-in / time tracking |
 
