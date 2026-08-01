@@ -88,12 +88,16 @@ Every app shares one Neon Postgres database. It has two branches:
 So a preview deployment cannot touch production data. The `staging` branch was copied from production,
 so it has realistic data and the full schema, including other apps' tables.
 
-Two caveats:
+Three caveats:
 
 - **Sign-in on a `feat/` preview may not work.** `AUTH_URL`, `GATEWAY_URL` and `HOLS_SYNC_URL` are
   scoped to the `staging` branch only, because pointing OAuth redirects at a different host breaks the
   callback. Use the staging URL for anything involving auth.
 - **Blob storage is shared with production.** Files you upload from staging land in the real bucket.
+- **Staging URLs are reachable by anyone who knows them.** Vercel Deployment Protection is switched
+  off on every app project, so the only gate is the app's own Google sign-in plus tool-card access —
+  the same gate production uses. Don't treat a staging URL as private, and remember the `staging`
+  database is a copy of real production data.
 
 ## 6. Schema changes
 
@@ -116,6 +120,18 @@ moment you drop it. Sequence: add → migrate every app to the new tag → remov
 - Preview and production `DATABASE_URL` are **separate variable records** in Vercel. Never widen the
   production record back to the `preview` scope — that is exactly what used to let feature previews
   write to production.
+- **Auth variables must be scoped to Preview as well as Production.** `AUTH_SECRET`,
+  `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` are the exception to the rule above: unlike
+  `DATABASE_URL`, staging deliberately shares production's values, because the Google OAuth client
+  already whitelists the staging redirect URIs. If one of them is Production-only, the preview build
+  starts Auth.js with no secret, every `/api/auth/*` route returns 500, and `/` and `/login` redirect
+  at each other until the browser gives up with `ERR_TOO_MANY_REDIRECTS`. Check with:
+
+  ```bash
+  curl -s https://<project>-git-staging-meavo-gateway.vercel.app/api/auth/providers
+  # healthy  -> {"google":{...}}
+  # broken   -> {"message":"There was a problem with the server configuration..."}
+  ```
 
 ## 8. Coverage
 
