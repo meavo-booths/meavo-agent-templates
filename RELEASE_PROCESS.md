@@ -76,24 +76,39 @@ Node is pinned to **24** to match what Vercel builds with. If you change that, c
 
 ## 5. Environments and data
 
-Every app shares one Neon Postgres database. It has two branches:
+Every app shares one Neon Postgres database. It has three branches:
 
 | Where you are | `DATABASE_URL` resolves to |
 |---------------|---------------------------|
 | `main` / production deployment | **production data** |
 | `staging` deployment | `staging` Neon branch |
 | any `feat/` preview deployment | `staging` Neon branch |
-| local `vercel env pull` (development) | production in some repos — check before you write |
+| local `vercel env pull` (development) | `dev` Neon branch, where the repo defines one |
 
-So a preview deployment cannot touch production data. The `staging` branch was copied from production,
-so it has realistic data and the full schema, including other apps' tables.
+So neither a preview deployment nor a local dev server can touch production data. Both the `staging`
+and `dev` branches were copied from production, so they have realistic data and the full schema,
+including other apps' tables.
 
-Two caveats:
+Not every repo has a `development`-scoped `DATABASE_URL`. Where there is none, `vercel env pull` gives
+you no database URL and you supply your own `.env` — which is also safe. `Meavo-Factory` and
+`meavo-tickets` have their own separate development records that predate this setup; check where they
+point before writing locally.
+
+Three caveats:
 
 - **Sign-in on a `feat/` preview may not work.** `AUTH_URL`, `GATEWAY_URL` and `HOLS_SYNC_URL` are
   scoped to the `staging` branch only, because pointing OAuth redirects at a different host breaks the
   callback. Use the staging URL for anything involving auth.
-- **Blob storage is shared with production.** Files you upload from staging land in the real bucket.
+- **Blob storage is separate, so old attachments won't download on staging.** Preview deployments write
+  to one shared `meavo-staging-blob` store; production keeps its own per-app stores (`assembly-photos`,
+  `meavo-hr-contracts`, `mrp-files` and so on). Because the `staging` database is a *copy* of
+  production, it contains rows pointing at files that live in the production store — and staging has no
+  token for it. Downloading a pre-existing attachment on staging therefore fails. That's expected, not
+  a bug. Files you upload *on* staging work normally and land in the staging store.
+- **Staging URLs are reachable by anyone who knows them.** Vercel Deployment Protection is switched
+  off on every app project, so the only gate is the app's own Google sign-in plus tool-card access —
+  the same gate production uses. Don't treat a staging URL as private, and remember the `staging`
+  database is a copy of real production data.
 
 ## 6. Schema changes
 
@@ -116,6 +131,18 @@ moment you drop it. Sequence: add → migrate every app to the new tag → remov
 - Preview and production `DATABASE_URL` are **separate variable records** in Vercel. Never widen the
   production record back to the `preview` scope — that is exactly what used to let feature previews
   write to production.
+- **Auth variables must be scoped to Preview as well as Production.** `AUTH_SECRET`,
+  `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` are the exception to the rule above: unlike
+  `DATABASE_URL`, staging deliberately shares production's values, because the Google OAuth client
+  already whitelists the staging redirect URIs. If one of them is Production-only, the preview build
+  starts Auth.js with no secret, every `/api/auth/*` route returns 500, and `/` and `/login` redirect
+  at each other until the browser gives up with `ERR_TOO_MANY_REDIRECTS`. Check with:
+
+  ```bash
+  curl -s https://<project>-git-staging-meavo-gateway.vercel.app/api/auth/providers
+  # healthy  -> {"google":{...}}
+  # broken   -> {"message":"There was a problem with the server configuration..."}
+  ```
 
 ## 8. Coverage
 

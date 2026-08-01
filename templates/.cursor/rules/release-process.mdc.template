@@ -5,13 +5,9 @@ alwaysApply: true
 
 # Meavo Release Process
 
-This rule is **identical in every meavo-booths repo** — it has no repo-specific
-placeholders. Copy it verbatim; do not customise it per repo. Canonical version:
-[meavo-agent-templates/RELEASE_PROCESS.md](https://github.com/meavo-booths/meavo-agent-templates/blob/main/RELEASE_PROCESS.md).
-
 All Meavo repos use `main` (production) and `staging` (integration). Both are
 protected: direct pushes are rejected, and a passing `Typecheck` check plus a
-pull request are required. Reviews are not required — CI is the gate.
+pull request are required.
 
 ## Never push to main or staging
 
@@ -52,9 +48,22 @@ preview deployment — `staging` and every `feat/` branch alike — resolves the
 production are separate variable records; never widen the production record back
 to `preview`.
 
-Cross-app URLs (`AUTH_URL`, `GATEWAY_URL`, `HOLS_SYNC_URL`) are scoped to the
+Cross-app URLs (`AUTH_URL`, `GATEWAY_URL`, `HOLS_SYNC_URL`) are still scoped to the
 `staging` branch alone, so sign-in on a `feat/` preview can misbehave. Use the
 staging URL for anything involving auth.
+
+The `development` scope resolves the `dev` Neon branch where a repo defines one, so
+a local dev server never writes production data either. Where no
+`development`-scoped `DATABASE_URL` exists, supply your own `.env`.
+
+## Blob storage
+
+Preview deployments write to one shared `meavo-staging-blob` store; production keeps
+its per-app stores. Since the `staging` database is a copy of production, it holds
+rows referencing files in the production store that staging cannot read — so
+downloading a pre-existing attachment on staging fails by design. Never widen a
+production `*_READ_WRITE_TOKEN` back to `preview`; that is what used to let staging
+write into the real bucket.
 
 `@meavo/db` is pinned per app by git tag, so schema changes must stay backward
 compatible — add columns rather than renaming or dropping them, since older apps
@@ -70,3 +79,24 @@ the change silently has no effect:
 vercel redeploy https://<project>-git-staging-meavo-gateway.vercel.app \
   --scope meavo-gateway
 ```
+
+## Auth on staging
+
+`AUTH_SECRET`, `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` must be scoped to **both**
+`production` and `preview`. Staging intentionally shares production's values here,
+because the Google OAuth client already whitelists the staging redirect URIs. A
+Production-only auth variable makes the preview build start Auth.js with no secret:
+`/api/auth/*` returns 500 and `/` and `/login` redirect at each other forever.
+
+Diagnose it directly rather than guessing from the browser:
+
+```bash
+curl -s https://<project>-git-staging-meavo-gateway.vercel.app/api/auth/providers
+# healthy -> {"google":{...}}
+# broken  -> {"message":"There was a problem with the server configuration..."}
+```
+
+Vercel Deployment Protection is off on every app project, so staging URLs are
+publicly reachable and gated only by the app's own sign-in. Don't re-enable it
+without telling the team — it makes every staging URL answer with Vercel's login
+page, which masks real application errors behind what looks like an access problem.
