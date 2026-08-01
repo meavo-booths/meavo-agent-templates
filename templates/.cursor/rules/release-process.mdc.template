@@ -52,6 +52,19 @@ Cross-app URLs (`AUTH_URL`, `GATEWAY_URL`, `HOLS_SYNC_URL`) are still scoped to 
 `staging` branch alone, so sign-in on a `feat/` preview can misbehave. Use the
 staging URL for anything involving auth.
 
+The `development` scope resolves the `dev` Neon branch where a repo defines one, so
+a local dev server never writes production data either. Where no
+`development`-scoped `DATABASE_URL` exists, supply your own `.env`.
+
+## Blob storage
+
+Preview deployments write to one shared `meavo-staging-blob` store; production keeps
+its per-app stores. Since the `staging` database is a copy of production, it holds
+rows referencing files in the production store that staging cannot read — so
+downloading a pre-existing attachment on staging fails by design. Never widen a
+production `*_READ_WRITE_TOKEN` back to `preview`; that is what used to let staging
+write into the real bucket.
+
 `@meavo/db` is pinned per app by git tag, so schema changes must stay backward
 compatible — add columns rather than renaming or dropping them, since older apps
 still read the same tables.
