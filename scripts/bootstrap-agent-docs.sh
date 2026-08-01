@@ -66,6 +66,8 @@ copy_template ".cursor/rules/domain.mdc.template" ".cursor/rules/domain.mdc"
 copy_template ".cursor/rules/api.mdc.template" ".cursor/rules/api.mdc"
 copy_template ".cursor/rules/ui.mdc.template" ".cursor/rules/ui.mdc"
 copy_template ".cursor/rules/security.mdc.template" ".cursor/rules/security.mdc"
+# Org-wide constant, no placeholders to fill — same in every repo.
+copy_template ".cursor/rules/release-process.mdc.template" ".cursor/rules/release-process.mdc"
 if [[ "$WITH_LEGACY" -eq 1 ]]; then
   copy_template ".cursor/rules/legacy.mdc.template" ".cursor/rules/legacy.mdc"
 fi

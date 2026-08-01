@@ -9,6 +9,7 @@ Use this pack to bootstrap or refresh agent docs in any Meavo project (Next.js a
 | Path | Purpose |
 |------|---------|
 | [STANDARDS.md](STANDARDS.md) | **Org-wide conventions** — unified database, UI (mobile + desktop), security, and architecture rules every repo must follow |
+| [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | **Branching & release workflow** — `main` / `staging` / feature branches, PR gates, staging database. Read this before your first PR |
 | [PROMPT.md](PROMPT.md) | **Copy-paste prompt** for repo-specific agents to bootstrap their own instruction files |
 | [INSTRUCTIONS.md](INSTRUCTIONS.md) | **Start here** — human + agent workflow for adopting templates in a target repo |
 | [BOOTSTRAP.md](BOOTSTRAP.md) | Agent-only playbook: discover repo → fill templates → verify |

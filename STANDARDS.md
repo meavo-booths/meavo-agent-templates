@@ -104,7 +104,15 @@ Follow gateway `AGENTS.md` §9 (tool card registry, navigation package update, s
 - Some older repos (`meavo-rp`, `meavo-clock`) predate parts of this standard (JS instead of TS, sheet-based flows). Document their actual state in their own `AGENTS.md`, but port toward this standard when rewriting.
 - Admin bypass of tool-card access is inconsistent across apps today (gateway §6.5) — new apps should grant admins explicit access via seed rather than invent another bypass.
 
-## 9. Keeping this file authoritative
+## 9. Branching & release (unified)
+
+Every repo uses `main` (production) and `staging` (integration), both protected: no direct pushes, PR + passing `Typecheck` required, no force-push or deletion. Branch off `staging` → PR into `staging` (**squash**) → verify on `https://<project>-git-staging-meavo-gateway.vercel.app` → PR `staging` into `main` (**merge commit**) to release. Never squash `staging` into `main`, and never `vercel --prod`.
+
+Preview deployments — `staging` and every feature branch — resolve the `staging` Neon branch; only production resolves production data. Because `@meavo/db` is pinned per app by tag, schema changes must be backward compatible (add, migrate every app, then remove in a later release).
+
+Full guide: [RELEASE_PROCESS.md](RELEASE_PROCESS.md). Distributed to repos as `.cursor/rules/release-process.mdc` — an org-wide constant, copied verbatim with nothing to fill in.
+
+## 10. Keeping this file authoritative
 
 When a convention changes (new shared package, auth pattern, palette update):
 
