@@ -1,0 +1,72 @@
+---
+description: Branch and release workflow for all Meavo repos (never push to main)
+alwaysApply: true
+---
+
+# Meavo Release Process
+
+This rule is **identical in every meavo-booths repo** — it has no repo-specific
+placeholders. Copy it verbatim; do not customise it per repo. Canonical version:
+[meavo-agent-templates/RELEASE_PROCESS.md](https://github.com/meavo-booths/meavo-agent-templates/blob/main/RELEASE_PROCESS.md).
+
+All Meavo repos use `main` (production) and `staging` (integration). Both are
+protected: direct pushes are rejected, and a passing `Typecheck` check plus a
+pull request are required. Reviews are not required — CI is the gate.
+
+## Never push to main or staging
+
+```bash
+# ❌ BAD — rejected by branch protection
+git checkout main && git commit -m "..." && git push
+
+# ✅ GOOD — branch off staging, then open a PR
+git fetch origin
+git checkout -b feat/my-change origin/staging
+git commit -m "..."
+git push -u origin feat/my-change
+gh pr create --base staging
+```
+
+## The flow
+
+1. Branch off `staging` using a `feat/`, `fix/`, or `chore/` prefix.
+2. Open a PR into `staging`. CI runs and Vercel builds a preview deployment.
+3. Merge with **squash** once green. Verify on the staging URL:
+   `https://<project>-git-staging-meavo-gateway.vercel.app`
+4. To release, open a PR from `staging` into `main` and merge with a
+   **merge commit**. Merging to `main` deploys production.
+
+Never squash `staging` into `main` — it rewrites the commits and leaves the two
+branches permanently diverged.
+
+## Deploying
+
+Pushing to `main` is what deploys production, and it only happens by merging a
+release PR. Never run `vercel --prod`.
+
+## Shared database
+
+Every app reads one Neon database. `DATABASE_URL` is scoped so that **every**
+preview deployment — `staging` and every `feat/` branch alike — resolves the
+`staging` Neon branch, and only `production` resolves production data. Preview and
+production are separate variable records; never widen the production record back
+to `preview`.
+
+Cross-app URLs (`AUTH_URL`, `GATEWAY_URL`, `HOLS_SYNC_URL`) are scoped to the
+`staging` branch alone, so sign-in on a `feat/` preview can misbehave. Use the
+staging URL for anything involving auth.
+
+`@meavo/db` is pinned per app by git tag, so schema changes must stay backward
+compatible — add columns rather than renaming or dropping them, since older apps
+still read the same tables.
+
+## Changing environment variables
+
+Vercel resolves environment variables when a deployment is built, so editing a
+variable does nothing to deployments that already exist. Redeploy afterwards, or
+the change silently has no effect:
+
+```bash
+vercel redeploy https://<project>-git-staging-meavo-gateway.vercel.app \
+  --scope meavo-gateway
+```
