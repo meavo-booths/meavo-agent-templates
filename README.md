@@ -33,7 +33,7 @@ git clone https://github.com/meavo-booths/meavo-agent-templates.git
 python3 meavo-agent-templates/scripts/sync-release-policy.py /path/to/your-repo
 ```
 
-Make changes on a feature branch and open the PR explicitly into `staging`. Never merge to `main` without the specific human permission described in [RELEASE_PROCESS.md](RELEASE_PROCESS.md). If staging is missing, report the setup gap and do not use main instead.
+Make changes on a feature branch and open the PR explicitly into `staging`. After integrating and verifying staging, present the concrete release and stop for one human approval before `main`. The PR author may approve in chat or a human-authored PR comment; no second person or formal approving review is required. Follow [RELEASE_PROCESS.md](RELEASE_PROCESS.md). If staging is missing, report the setup gap and do not use main instead.
 
 Then open `AGENTS.md` and the `docs/` files and replace every `<!-- FILL: ... -->` block with repo-specific content. See [INSTRUCTIONS.md](INSTRUCTIONS.md) for the full workflow.
 

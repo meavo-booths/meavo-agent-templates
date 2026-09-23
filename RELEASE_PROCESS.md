@@ -1,6 +1,6 @@
 # MEAVO branching and release process
 
-AI agents may complete authorized work on feature branches and through PRs into `staging`. **Every production action requires explicit permission from a human for the repository, the specific action, and the current reviewed PR/head SHA or exact artifact/configuration scope.** Passing CI alone never authorizes a production release.
+AI agents may complete authorized work on feature branches and through PRs into `staging`. **Every production action requires explicit permission from a human for the repository, the specific action, and the current reviewed PR/head SHA or exact artifact/configuration scope.** **Feature → staging → stop and ask → one human approves → main.** The human may be the PR author; a second person or separate account is not required. Passing CI alone never authorizes a production release.
 
 The complete, self-contained policy distributed to every repository is [templates/RELEASE_POLICY.md.template](templates/RELEASE_POLICY.md.template), installed as root `RELEASE_POLICY.md`. Read it before any release, deployment, environment, schema, or tag/package publication action. The short gate also lives in each repository's root `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and always-applied Cursor release rule.
 
@@ -10,7 +10,7 @@ The complete, self-contained policy distributed to every repository is [template
 |--------|---------|----------------|
 | `feat/…`, `fix/…`, `chore/…` | Short-lived implementation and preview work | Branch from the latest `origin/staging`, commit, push, and open a PR explicitly targeting `staging` |
 | `staging` | Shared integration and non-production verification | PRs only; squash after required checks pass; verify the resulting staging deployment |
-| `main` | Production release branch | Only a `staging` → `main` PR, independent human approval, required checks, and a merge commit |
+| `main` | Production release branch | Only a `staging` → `main` PR, one explicit human approval (PR author allowed), required checks, and a merge commit |
 
 Never push directly to `main` or `staging`, force-push/delete them, or bypass their protections. If staging is absent, stop integration/release work and report the missing setup; local feature work from the audited default branch can continue for onboarding. Verify preview isolation before pushing. Missing staging is not permission to merge into main.
 
@@ -39,9 +39,9 @@ An agent may prepare a release PR and its review evidence:
 gh pr create --base main --head staging --title "Release: <scope>"
 ```
 
-Before merging, enabling auto-merge, queueing, or invoking any other production path, prepare the exact PR/head SHA, release scope, checks, staging result, and any separate migration/package/environment operations for human review. Verify that an identifiable human explicitly authorized the current action and reviewed content, and that required independent review and server checks pass. Never generate an approval on the human's behalf.
+Complete staging integration and verification first. Present the exact release PR/head SHA, release scope, checks, staging result, and any separate migration/package/environment operations; **stop and ask for one human approval before main**. Accept the PR author's own decision in the conversation or a human-authored PR comment. A clear “yes” responding to that specific request is sufficient; a formal approving review, another person or another account is not required. Wait for that decision before merging, enabling auto-merge, queueing, or invoking any other production path. Never infer it from the original implementation request, green CI, silence, or an agent-authored approval.
 
-Recheck the repository, `staging` source, `main` base, approved head SHA, and approval immediately before acting. Changed content or scope needs new human approval; an existing approval for the unchanged action remains valid without asking again. Use a merge commit and a head-SHA match guard where available. Never squash or rebase the staging-to-main release.
+Recheck the repository, `staging` source, `main` base, approved head SHA, and approval immediately before acting. Changed content or scope needs new human approval; an existing approval for the unchanged verified staging release remains valid without asking again, including when retrying a failed merge command. Confirm required server checks and branch rules pass. Never generate an approval on the human's behalf. Use a merge commit and a head-SHA match guard where available. Never squash or rebase the staging-to-main release.
 
 The same permission gate covers production redeployments, promotions, rollbacks, domain aliases, environment changes, schema/data operations, release tags, and package publication. Do not use `vercel --prod`, an API/dashboard action, a release tag, or a manual workflow to evade the PR process. Explicit permission for a main merge does not silently authorize a separate production operation.
 
@@ -49,12 +49,12 @@ The same permission gate covers production redeployments, promotions, rollbacks,
 
 Required configuration and deployed configuration are distinct. Inspect live rulesets, branch protections, CI and provider settings before claiming enforcement.
 
-- `main`: PRs, passing required checks, at least one independent human approval, stale approvals dismissed, latest-push approval by someone other than its pusher, merge commits for releases, and no bypass actors, force-pushes or deletion.
+- `main`: PRs, passing required checks, resolved review conversations, staging-only source, merge commits for releases, and no direct/force pushes, deletion or bypass actors. Set `required_approving_review_count: 0` and `require_last_push_approval: false`. GitHub prohibits formal PR self-approval; these settings permit the author to supply the separate human consent that agents must obtain.
 - `staging`: PRs and required checks; no direct/force pushes or deletion.
 - Production deployment paths and credentials: human-controlled approval and access at the provider as well as GitHub. A GitHub environment gate covers only jobs that use that environment; it does not automatically gate a separate Git integration.
-- Policy and source-branch validation: install the managed policy verifier/workflow and make its check required where supported. It catches missing or altered policy and wrong release source branches; it cannot prove a human supplied permission. A repository-local hash manifest is editable in the same PR and is only a drift check. Required independent human review and restricted production credentials are the security boundary.
+- Policy and source-branch validation: install the managed policy verifier/workflow and make its check required where supported. It catches missing or altered policy and wrong release source branches; it cannot prove a human supplied permission. A repository-local hash manifest is editable in the same PR and is only a drift check. The post-staging human-consent checkpoint is enforced by agent instructions, while GitHub enforces branch and CI rules. Zero required formal reviews does not give an agent permission to release.
 
-Agents using a human's credentials look like that human to GitHub and deployment providers. Instructions, commit authors, labels and local hooks cannot solve that identity problem. Prefer separate limited agent credentials and independent human control of production. Do not weaken a gate to make an agent's release possible.
+Agents using a human's credentials look like that human to GitHub and deployment providers. Instructions, commit authors, labels and local hooks cannot solve that identity problem. Prefer separate limited agent credentials and human control of production. The author can provide that human decision; separate limited agent credentials improve identity separation but are not a second-human requirement. Do not weaken a gate to make an agent's release possible.
 
 CI commands and required status names must match each repository. `Typecheck` is a common existing check, and `meavo-db` validates Prisma; do not assume every repository has identical scripts or required contexts.
 
