@@ -6,8 +6,8 @@ Use this guide when adding or refreshing instruction files in any **meavo-booths
 
 | Role | Action |
 |------|--------|
-| **Human (repo owner)** | Run bootstrap, review filled docs, merge PR |
-| **AI agent** | Follow [BOOTSTRAP.md](BOOTSTRAP.md) — discover repo, fill placeholders, open PR |
+| **Human (repo owner)** | Review docs and give specific production permission after verified staging when a release is intended; the PR author may provide that decision |
+| **AI agent** | Follow [BOOTSTRAP.md](BOOTSTRAP.md), fill docs, and open a feature PR explicitly into `staging` |
 | **Org maintainer** | Keep templates in `meavo-agent-templates` generic and up to date |
 
 ## Step 1 — Bootstrap file skeleton
@@ -15,24 +15,28 @@ Use this guide when adding or refreshing instruction files in any **meavo-booths
 From the **target repo root**:
 
 ```bash
-# Option A: clone + script
+# Clone the complete pack; the script requires the adjacent template files.
 git clone https://github.com/meavo-booths/meavo-agent-templates.git /tmp/meavo-agent-templates
 /tmp/meavo-agent-templates/scripts/bootstrap-agent-docs.sh .
-
-# Option B: one-liner (after this repo is published)
-curl -fsSL https://raw.githubusercontent.com/meavo-booths/meavo-agent-templates/main/scripts/bootstrap-agent-docs.sh | bash -s -- .
 ```
 
 The script copies:
 
-- `AGENTS.md`
-- `CONTRIBUTING.md`
+- `AGENTS.md`, `CLAUDE.md`, and `CONTRIBUTING.md` with mandatory managed release blocks
+- `RELEASE_POLICY.md`, release-policy verification tooling/workflow, and `.cursor/rules/release-process.mdc`
 - `.cursorignore`
 - `.cursor/rules/core.mdc`, `domain.mdc`, `api.mdc`, `ui.mdc`, `security.mdc`
 - `docs/architecture.md`, `domain.md`, `data-model.md` (skip `data-model.md` if no database)
 - `--with-legacy` adds `.cursor/rules/legacy.mdc` for repos with a read-only legacy subtree
 
-**It will not overwrite** existing files unless you pass `--force`.
+Existing customized agent docs are preserved unless `--force` is used. Mandatory release-policy files and managed blocks are refreshed separately; do not remove or mark them N/A. For an existing repo that only needs a policy refresh, run:
+
+```bash
+python3 /tmp/meavo-agent-templates/scripts/sync-release-policy.py .
+python3 /tmp/meavo-agent-templates/scripts/sync-release-policy.py . --check
+```
+
+Work on `feat/`, `fix/`, or `chore/` from `staging` and set the PR base explicitly to `staging`. If staging is missing, report the setup gap rather than using main. See [RELEASE_PROCESS.md](RELEASE_PROCESS.md) before release or deployment work.
 
 ## Step 2 — Read the org standards
 
@@ -63,6 +67,7 @@ Work top-down. Stop when a section doesn't apply and mark it `N/A` or delete it.
 
 Keep under **~150 lines**. Must include:
 
+- The managed release-safety block at the top, pointing to root `RELEASE_POLICY.md`
 - One-sentence product description
 - Stack bullets
 - **Task → file** table (most valuable section)
@@ -70,9 +75,9 @@ Keep under **~150 lines**. Must include:
 - Dev commands (`install`, `dev`, `test`, `lint`, `build`)
 - Links to `docs/` and `.cursor/rules/`
 
-### 4.2 `.cursor/rules/core.mdc` (required)
+### 4.2 `.cursor/rules/core.mdc` and release policy (required)
 
-`alwaysApply: true` — stack, layout table, hard guardrails, data-flow one-liner.
+`alwaysApply: true` — stack, layout table, hard guardrails, data-flow one-liner. Keep the release-safety pointer. `.cursor/rules/release-process.mdc` is also always applied and must match its canonical template; it has no repo-specific placeholders. Root `RELEASE_POLICY.md` applies to every repo, including pure libraries and documentation.
 
 Migrate any legacy root `.cursorrules` content here, then **delete or slim** `.cursorrules` to avoid duplicate/conflicting rules. Point `.cursorrules` at `.cursor/rules/` with one line if your team still expects the file.
 
@@ -106,7 +111,7 @@ Schema ownership (usually **meavo-db**), entity diagram, field notes agents can'
 
 ### 4.10 `CONTRIBUTING.md` (recommended)
 
-Branch naming, PR checklist, test expectations, cross-repo bump process.
+Branch naming, PR checklist, test expectations, cross-repo bump process. Preserve the mandatory production-permission block; normal PRs target staging.
 
 ### 4.11 `.cursorignore` (recommended)
 
@@ -132,7 +137,7 @@ Run the automated checker from the target repo root, then the manual checklist:
 /tmp/meavo-agent-templates/scripts/verify-agent-docs.sh .
 ```
 
-Then run through [CHECKLIST.md](CHECKLIST.md). Open a PR titled e.g. `docs: add agent instruction files`.
+Then run through [CHECKLIST.md](CHECKLIST.md). Open a PR explicitly targeting `staging`, titled e.g. `docs: add agent instruction files`. Production is a separate human-authorized action.
 
 ## Step 7 — Keep docs alive
 
@@ -167,6 +172,7 @@ Use this prompt in the target repo:
 Read meavo-booths/meavo-agent-templates BOOTSTRAP.md and STANDARDS.md, then bootstrap agent docs for THIS repo.
 Discover stack and layout from the codebase. Fill all <!-- FILL: --> placeholders.
 Apply org-wide rules from STANDARDS.md; mark any deviations explicitly.
-Do not copy content from other Meavo repos verbatim. Open a PR when done.
+Keep the managed release-policy files and blocks intact. Do not copy repo-specific content
+from other Meavo repos. Open a feature PR explicitly into staging when done; no main release.
 Run scripts/verify-agent-docs.sh and CHECKLIST.md to verify.
 ```

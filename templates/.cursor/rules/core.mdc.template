@@ -9,6 +9,10 @@ Environment: <!-- FILL: e.g. Next.js 15 App Router at app.example.com. NOT legac
 
 <!-- FILL: bullet list matching AGENTS.md -->
 
+## Release safety
+
+Read root `RELEASE_POLICY.md` and follow `.cursor/rules/release-process.mdc`. Feature/staging work is the default. After staging integration and verification, present the release PR/head and results, stop and ask for one human approval before main. The PR author may approve in chat or a human-authored PR comment; a clear “yes” to the specific request suffices. No second account or formal approving review is required. Every production action requires explicit human permission for this repository, action, and current reviewed PR/head SHA or artifact/configuration scope. Never push directly to `main`/`staging`, infer approval, or bypass protections.
+
 ## Do NOT
 
 <!-- FILL: same hard rules as AGENTS.md — keep in sync -->

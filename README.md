@@ -9,7 +9,8 @@ Use this pack to bootstrap or refresh agent docs in any Meavo project (Next.js a
 | Path | Purpose |
 |------|---------|
 | [STANDARDS.md](STANDARDS.md) | **Org-wide conventions** — unified database, UI (mobile + desktop), security, and architecture rules every repo must follow |
-| [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | **Branching & release workflow** — `main` / `staging` / feature branches, PR gates, staging database. Read this before your first PR |
+| [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | **Branching & release workflow** — feature/staging by default; explicit human permission before production |
+| [templates/RELEASE_POLICY.md.template](templates/RELEASE_POLICY.md.template) | Complete mandatory release policy installed as root `RELEASE_POLICY.md` in every repository |
 | [PROMPT.md](PROMPT.md) | **Copy-paste prompt** for repo-specific agents to bootstrap their own instruction files |
 | [INSTRUCTIONS.md](INSTRUCTIONS.md) | **Start here** — human + agent workflow for adopting templates in a target repo |
 | [BOOTSTRAP.md](BOOTSTRAP.md) | Agent-only playbook: discover repo → fill templates → verify |
@@ -17,18 +18,22 @@ Use this pack to bootstrap or refresh agent docs in any Meavo project (Next.js a
 | [templates/](templates/) | Blank files with `<!-- FILL: ... -->` placeholders |
 | [examples/](examples/) | A fully filled `AGENTS.md` example + pointers to reference repos |
 | [scripts/bootstrap-agent-docs.sh](scripts/bootstrap-agent-docs.sh) | Copies templates into a target repo (strips `.template` suffix) |
-| [scripts/verify-agent-docs.sh](scripts/verify-agent-docs.sh) | Automated post-fill verification (placeholders, paths, rule frontmatter) |
+| [scripts/verify-agent-docs.sh](scripts/verify-agent-docs.sh) | Automated post-fill verification (release policy, placeholders, paths, rule frontmatter) |
+| [scripts/sync-release-policy.py](scripts/sync-release-policy.py) | Refresh only managed release files/blocks; `--check` detects drift |
+| [scripts/verify-release-policy.py](scripts/verify-release-policy.py) | Verify installed release policy and valid production PR source |
 
 ## Quick start (human)
 
 ```bash
-# From your target repo root (e.g. meavo-sales, meavo-gateway)
-curl -fsSL https://raw.githubusercontent.com/meavo-booths/meavo-agent-templates/main/scripts/bootstrap-agent-docs.sh | bash -s -- .
-
-# Or clone this repo and run locally:
+# Clone the complete pack: the bootstrap script needs its template files.
 git clone https://github.com/meavo-booths/meavo-agent-templates.git
 ./meavo-agent-templates/scripts/bootstrap-agent-docs.sh /path/to/your-repo
+
+# Refresh just the mandatory release policy in an existing repository.
+python3 meavo-agent-templates/scripts/sync-release-policy.py /path/to/your-repo
 ```
+
+Make changes on a feature branch and open the PR explicitly into `staging`. After integrating and verifying staging, present the concrete release and stop for one human approval before `main`. The PR author may approve in chat or a human-authored PR comment; no second person or formal approving review is required. Follow [RELEASE_PROCESS.md](RELEASE_PROCESS.md). If staging is missing, report the setup gap and do not use main instead.
 
 Then open `AGENTS.md` and the `docs/` files and replace every `<!-- FILL: ... -->` block with repo-specific content. See [INSTRUCTIONS.md](INSTRUCTIONS.md) for the full workflow.
 
@@ -45,7 +50,7 @@ Do not copy meavo-rp-specific content — discover this repo's stack, layout, an
 ## Design principles
 
 1. **Task-oriented** — agents need “where to change X”, not essays.
-2. **Layered** — `STANDARDS.md` (org constants) → `AGENTS.md` (short) → `docs/*` (deep) → `.cursor/rules/*` (enforced).
+2. **Layered** — `STANDARDS.md` (org constants) → `AGENTS.md` (short) → `docs/*` (deep) → `.cursor/rules/*` (always-applied guidance); GitHub/provider protections supply access control.
 3. **Repo-specific** — templates are blanks; each app fills in its own stack, paths, and business rules. Org-wide constants come from [STANDARDS.md](STANDARDS.md), not from guessing.
 4. **Single source of truth** — link between files; don't duplicate long sections.
 5. **Minimal diff discipline** — encoded in `CONTRIBUTING.md` and cursor rules.
@@ -61,5 +66,5 @@ Not every repo uses all of it (e.g. `meavo-db`, `meavo-navigation`, legacy JS ap
 When you improve agent docs in one Meavo repo and the pattern is reusable:
 
 1. Generalize the improvement into a template here (keep placeholders).
-2. Open a PR to `meavo-agent-templates`.
-3. Optionally refresh sibling repos in a follow-up PR.
+2. Open a feature PR to `meavo-agent-templates` targeting `staging`; a main release requires separate human permission.
+3. For release-policy changes, refresh every affected repository with `sync-release-policy.py` and submit staging PRs. Validate canonical copies with `--check`; do not overwrite customized documentation wholesale.

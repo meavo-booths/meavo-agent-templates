@@ -51,7 +51,7 @@ src/middleware.ts     # page-level auth gate
 
 ## 3. Database (unified)
 
-1. **All schema changes go in `meavo-db`** — never in app repos. Workflow: edit schema in meavo-db → tag release → bump `@meavo/db` git ref in every affected app → `npm install` + `prisma generate`.
+1. **All schema changes go in `meavo-db`** — never in app repos. Workflow: prepare and validate schema changes in meavo-db through staging → obtain explicit human permission before production migration or consumed release-tag publication → bump `@meavo/db` git ref in affected apps through their staging PRs → `npm install` + `prisma generate`. Production releases follow §9.
 2. `package.json` points Prisma at the shared package: `"prisma": { "schema": "node_modules/@meavo/db/prisma/schema.prisma" }`.
 3. **Never run `prisma db push` from an app repo** — a stale schema can drop other apps' tables. Disable the script like gateway does. Apply schema only from the canonical `@meavo/db` schema; targeted fixes via idempotent `scripts/*.sql` + `prisma db execute`.
 4. Naming: PascalCase models, camelCase fields, `cuid()` string IDs, `SCREAMING_SNAKE` enum values, schema organized by owning app with `// ── app ──` section comments.
@@ -106,11 +106,15 @@ Follow gateway `AGENTS.md` §9 (tool card registry, navigation package update, s
 
 ## 9. Branching & release (unified)
 
-Every repo uses `main` (production) and `staging` (integration), both protected: no direct pushes, PR + passing `Typecheck` required, no force-push or deletion. Branch off `staging` → PR into `staging` (**squash**) → verify on `https://<project>-git-staging-meavo-gateway.vercel.app` → PR `staging` into `main` (**merge commit**) to release. Never squash `staging` into `main`, and never `vercel --prod`.
+Every repository must follow [RELEASE_PROCESS.md](RELEASE_PROCESS.md) and the distributed root `RELEASE_POLICY.md`. AI agents work on `feat/`, `fix/`, or `chore/` branches from `staging`, open PRs explicitly into `staging`, and squash only after required checks pass. Never push directly to `main` or `staging` or bypass protections. Missing staging is not permission to release into main.
 
-Preview deployments — `staging` and every feature branch — resolve the `staging` Neon branch; only production resolves production data. Because `@meavo/db` is pinned per app by tag, schema changes must be backward compatible (add, migrate every app, then remove in a later release).
+**After staging integration and verification, present the release PR/head, scope and check results; stop and ask for one human approval before main.** The PR author may approve in the conversation or a human-authored PR comment; a clear “yes” to the specific request is enough. No second person or formal approving review is required. Never run feature → staging → main without that checkpoint.
 
-Full guide: [RELEASE_PROCESS.md](RELEASE_PROCESS.md). Distributed to repos as `.cursor/rules/release-process.mdc` — an org-wide constant, copied verbatim with nothing to fill in.
+**Production requires explicit human permission for the repository, exact action, and current reviewed PR/head SHA or artifact/configuration scope.** This includes merging/auto-merging/queueing a main PR and production deployment, promotion, rollback, environment/schema changes, release tags, and package publication. Changed content or scope invalidates approval; green CI and credentials are not permission. Production PRs must be `staging` → `main` and use a merge commit.
+
+Verify actual database, storage and external-service destinations before feature/staging/local writes; do not assume isolation from branch names. `@meavo/db` changes must remain backward compatible while apps use different pinned versions. Check current GitHub and provider settings before claiming that a rule is enforced. See the full policy for the human-consent checkpoint and its limits when agents share human credentials. Required formal GitHub reviews are zero and latest-push approval is disabled; required checks and branch protections remain mandatory.
+
+The managed policy is distributed as `RELEASE_POLICY.md`, short blocks in `AGENTS.md`/`CLAUDE.md`/`CONTRIBUTING.md`, and always-applied `.cursor/rules/release-process.mdc`. These are organization-wide constants, including for libraries and documentation repositories.
 
 ## 10. Keeping this file authoritative
 
