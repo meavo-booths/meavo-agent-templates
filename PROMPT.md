@@ -6,7 +6,8 @@ Copy-paste the prompt below into a Cursor / Cloud agent session **in the target 
 
 ```
 You are working in a meavo-booths repository. Your task is to create repo-specific
-AI agent instruction files (AGENTS.md, .cursor/rules/*, docs/*, CONTRIBUTING.md)
+AI agent instruction files and mandatory release safeguards
+(AGENTS.md, CLAUDE.md, RELEASE_POLICY.md, .cursor/rules/*, docs/*, CONTRIBUTING.md)
 using the org template pack, so that future agents can produce better code faster
 in THIS repo.
 
@@ -15,6 +16,7 @@ in THIS repo.
 1. Clone the template pack:
    git clone https://github.com/meavo-booths/meavo-agent-templates.git /tmp/meavo-agent-templates
 2. Read these files from it, in order:
+   - RELEASE_PROCESS.md — mandatory feature/staging workflow and specific human production permission.
    - STANDARDS.md  — org-wide database, UI (mobile + desktop), and security rules. These are
                      CONSTANTS: copy the applicable ones into this repo's docs verbatim.
    - BOOTSTRAP.md  — your step-by-step playbook. Follow it exactly.
@@ -25,6 +27,12 @@ in THIS repo.
 
 ## Rules
 
+- Work on feat/, fix/, or chore/ from origin/staging and explicitly target staging in PRs.
+  Missing staging is not permission to push or merge main; report the setup gap.
+- Preserve RELEASE_POLICY.md and every managed MEAVO RELEASE POLICY block verbatim.
+  No repo type may mark these N/A. Production actions require a real human
+  to approve this repository, exact action, and current reviewed PR/head SHA or artifact/configuration scope.
+  Never infer or manufacture approval, enable production auto-merge, queue a main PR, or bypass protections.
 - DISCOVER FIRST, WRITE SECOND. Read package.json, README, src/ layout, auth code,
   vercel.json, and .env.example before writing any prose. Never guess paths, and never
   copy another Meavo repo's paths, sheet columns, or business rules.
@@ -45,7 +53,7 @@ in THIS repo.
   .cursor/rules/core.mdc and reduce .cursorrules to a one-line pointer (or delete it).
 - Update this repo's README.md with a docs table linking AGENTS.md, .cursor/rules/,
   and docs/. Remove stale doc references.
-- Scope: documentation only. Do not change application code.
+- Scope: documentation plus its managed release-policy verification tooling. Do not change application code.
 
 ## Verify
 
@@ -53,15 +61,18 @@ in THIS repo.
    Fix every FAIL; resolve or justify every warning.
 2. Work through /tmp/meavo-agent-templates/CHECKLIST.md manually — especially the
    "Org standards" and "Accuracy spot-checks" sections.
-3. Grep for leftover placeholders: no "FILL:" may remain in committed files.
+3. Run: python3 /tmp/meavo-agent-templates/scripts/sync-release-policy.py . --check
+4. Grep for leftover placeholders: no "FILL:" may remain in filled agent docs.
 
 ## Deliver
 
 Open a PR:
-- Branch: docs/agent-instruction-files
+- Branch: chore/agent-instruction-files from staging
+- Base: staging (set --base staging explicitly)
 - Title: "docs: add agent instruction files"
 - Body: list files added/updated, everything marked N/A or deleted (with reason),
   any deviations from STANDARDS.md, and the verify script output summary.
+Do not release to main or production as part of this bootstrap task.
 ```
 
 ---

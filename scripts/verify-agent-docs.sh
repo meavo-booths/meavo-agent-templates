@@ -3,6 +3,7 @@
 # Usage: verify-agent-docs.sh [target-repo-root]   (defaults to cwd)
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="$(cd "${1:-.}" && pwd)"
 cd "$TARGET"
 
@@ -15,6 +16,13 @@ fail() { echo "  FAIL  $1"; FAIL=$((FAIL+1)); }
 warn() { echo "  warn  $1"; WARN=$((WARN+1)); }
 
 echo "Verifying agent docs in: $TARGET"
+echo ""
+echo "== Release policy =="
+if python3 "$SCRIPT_DIR/sync-release-policy.py" "$TARGET" --check; then
+  ok "release policy matches canonical templates"
+else
+  fail "release policy missing, altered, or stale; run scripts/sync-release-policy.py"
+fi
 echo ""
 echo "== Files exist =="
 
