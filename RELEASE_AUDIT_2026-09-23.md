@@ -44,3 +44,13 @@ Protected staging branches were created for meavo-agent-templates, meavo-stock a
 - MRP’s existing build includes SQL migration/backfill scripts. Its database values are marked sensitive and the provider does not reveal their endpoints through the read API, so endpoint isolation could not be verified. Automatic deployment is disabled only for this policy feature branch in its vercel.json; do not merge its PR to staging until the staging database destination is verified. Database migrations must be explicitly included in future production release scope. Legacy production helper scripts elsewhere likewise remain subject to the policy.
 
 Main promotion of these documentation changes remains a separate human-approved release. Do not merge unrelated accumulated staging changes merely to distribute the policy.
+
+## Correction — 23 September 2026: one human, including the PR author
+
+The findings and protection changes above record the initial audit. The independent-review requirement introduced there was stricter than the intended policy: it forced a second human account because GitHub does not accept formal self-approval.
+
+The corrected process is **feature → staging → stop and ask → one human approves → main**. After staging integration and verification, agents present the concrete release PR, current head SHA, changes and check results, then wait for explicit human approval. The PR author may supply it in the conversation or a human-authored PR comment; a clear “yes” to that specific request suffices. Changed head or scope requires new approval; an unchanged retry reuses valid approval.
+
+The corrected main ruleset configuration is `required_approving_review_count: 0` and `require_last_push_approval: false`. Required PRs, CI, staging-only release source, merge commits, conversation resolution and protections against direct/force pushes, deletion and bypass remain. Apply and verify these values against the live API; this policy file alone does not prove a settings change occurred.
+
+The earlier statement that independent GitHub review is the merge gate is superseded. Agent instructions enforce the human-consent checkpoint; GitHub enforces branch and CI rules but cannot distinguish a human from an agent using that human’s credentials or authenticate conversational consent. This correction does not authorize other production releases and does not remove MRP’s unresolved database-isolation restriction.

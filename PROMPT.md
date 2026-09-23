@@ -32,6 +32,10 @@ in THIS repo.
 - Preserve RELEASE_POLICY.md and every managed MEAVO RELEASE POLICY block verbatim.
   No repo type may mark these N/A. Production actions require a real human
   to approve this repository, exact action, and current reviewed PR/head SHA or artifact/configuration scope.
+  For a release, complete staging integration and verification, present the concrete PR/head, scope and checks,
+  then stop and ask for one human approval before main. The PR author may approve in chat or a human-authored
+  PR comment; a clear “yes” to that specific request is sufficient. No second account or formal review is required.
+  Changed head/scope needs fresh approval; an unchanged retry can reuse valid approval.
   Never infer or manufacture approval, enable production auto-merge, queue a main PR, or bypass protections.
 - DISCOVER FIRST, WRITE SECOND. Read package.json, README, src/ layout, auth code,
   vercel.json, and .env.example before writing any prose. Never guess paths, and never

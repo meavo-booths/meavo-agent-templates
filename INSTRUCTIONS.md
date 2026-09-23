@@ -6,7 +6,7 @@ Use this guide when adding or refreshing instruction files in any **meavo-booths
 
 | Role | Action |
 |------|--------|
-| **Human (repo owner)** | Review docs and give specific production permission when a release is intended |
+| **Human (repo owner)** | Review docs and give specific production permission after verified staging when a release is intended; the PR author may provide that decision |
 | **AI agent** | Follow [BOOTSTRAP.md](BOOTSTRAP.md), fill docs, and open a feature PR explicitly into `staging` |
 | **Org maintainer** | Keep templates in `meavo-agent-templates` generic and up to date |
 

@@ -10,7 +10,7 @@
 
 ## Rules
 
-0. **Release safety is mandatory** — read [RELEASE_PROCESS.md](RELEASE_PROCESS.md). Work on feature branches and through staging PRs. Every production action needs explicit human permission for the repository, action, and current reviewed PR/head SHA or exact artifact/configuration scope. Never remove the managed release policy as N/A.
+0. **Release safety is mandatory** — read [RELEASE_PROCESS.md](RELEASE_PROCESS.md). Work on feature branches and through staging PRs. After staging integration and verification, present the release PR/head, scope and checks, then stop and ask for one human approval before main. The PR author may approve in chat or a human-authored PR comment; a clear “yes” to the specific request is sufficient. No second account or formal approving review is required. Every production action needs explicit human permission for the repository, action, and current reviewed PR/head SHA or exact artifact/configuration scope. Never remove the managed release policy as N/A.
 1. **Discover first, write second** — never guess paths or stack from sibling repos.
 2. **Org standards are constants** — read [STANDARDS.md](STANDARDS.md) and apply its database, UI, and security rules to every app repo; discovery fills the repo-specific blanks. If the repo deviates (older stack, no UI, schema owner), document the deviation explicitly.
 3. **General templates only** — source blanks from `meavo-booths/meavo-agent-templates`; do not clone `meavo-rp` docs wholesale.
@@ -100,6 +100,8 @@ Also run `python3 /tmp/meavo-agent-templates/scripts/sync-release-policy.py . --
 Then before opening PR, verify:
 
 - [ ] Mandatory release policy and all managed blocks match the templates; release Cursor rule is always applied
+- [ ] Agents stop after verified staging, present the concrete release and wait for one human decision; the PR author may approve
+- [ ] GitHub main rules require zero formal approving reviews and no last-push approval, while preserving PRs, CI, conversation resolution and no-bypass protections
 - [ ] Production operations require human permission; no remaining instruction directs agents to release main unconditionally
 
 - [ ] Every path in `AGENTS.md` task table exists on disk
