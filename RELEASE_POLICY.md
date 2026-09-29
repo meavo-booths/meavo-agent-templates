@@ -1,8 +1,8 @@
 # MEAVO release policy
 
-Policy version: 2026-09-23.2 (single-human approval correction)
+Policy version: 2026-09-29.1 (registered website staging exception)
 
-Applies to every `meavo-booths` repository and every AI agent, including agents using a human's account or credentials. This file is a managed copy of `meavo-agent-templates/templates/RELEASE_POLICY.md.template`. Repository-specific instructions may strengthen this policy but must not silently weaken it.
+Default policy for `meavo-booths` repositories and every AI agent, including agents using a human's account or credentials. This file is a managed copy of `meavo-agent-templates/templates/RELEASE_POLICY.md.template`. The sole registered staging exception, `meavo-booths/office-phone-booths-uk`, receives its own canonical policy from `templates/repositories/meavo-booths/office-phone-booths-uk/`; all other repositories follow the staging process below. Repository-specific instructions may strengthen this policy but must not silently weaken it.
 
 ## Default agent scope: feature and staging
 

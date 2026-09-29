@@ -16,7 +16,7 @@ Create `feat/`, `fix/`, or `chore/` branches from `staging` and open PRs explici
 
 ## Branch naming
 
-Use `feat/short-description`, `fix/issue-123`, or `chore/agent-docs` from `staging`. Explicitly set the PR base to `staging`.
+Use `feat/short-description`, `fix/issue-123`, or `chore/agent-docs` from the base named in the installed `RELEASE_POLICY.md`: staging by default; main only for the registered `meavo-booths/office-phone-booths-uk` website. Set the PR base explicitly to that branch and follow its verification and approval checkpoint.
 
 ## Commit messages
 

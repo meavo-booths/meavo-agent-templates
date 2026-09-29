@@ -1,0 +1,9 @@
+<!-- BEGIN MEAVO RELEASE POLICY -->
+## Release safety — mandatory for all AI agents
+
+- This repository has no staging environment. Create `feat/`, `fix/`, or `chore/` branches from `main` and open PRs explicitly into `main`. Do not use `staging`.
+- Merging into `main` deploys production. After verification, present the PR, current head SHA, changes and checks; **stop and ask for one human approval before merging**. The PR author may approve in the conversation or a human-authored PR comment; a clear “yes” to that specific request is sufficient. Never open and merge a PR into `main` as one uninterrupted operation.
+- Do not merge to `main`, enable auto-merge/queue a production PR, or change production without **explicit human approval for this repository, the specific action, and the reviewed PR/head SHA or exact artifact/configuration scope**. Changed scope or head invalidates approval; never infer or generate it. Reuse still-valid approval without asking again.
+- Never push directly to `main` or bypass protections. Merge PRs into `main` with a merge commit.
+- Read [RELEASE_POLICY.md](RELEASE_POLICY.md) before any release, deployment, environment, schema, or tag/package publication action. Verify actual environment destinations before writes.
+<!-- END MEAVO RELEASE POLICY -->
