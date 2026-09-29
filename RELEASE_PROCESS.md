@@ -1,10 +1,18 @@
 # MEAVO branching and release process
 
-AI agents may complete authorized work on feature branches and through PRs into `staging`. **Every production action requires explicit permission from a human for the repository, the specific action, and the current reviewed PR/head SHA or exact artifact/configuration scope.** **Feature → staging → stop and ask → one human approves → main.** The human may be the PR author; a second person or separate account is not required. Passing CI alone never authorizes a production release.
+By default, AI agents may complete authorized work on feature branches and through PRs into `staging`. **Every production action requires explicit permission from a human for the repository, the specific action, and the current reviewed PR/head SHA or exact artifact/configuration scope.** **Feature → staging → stop and ask → one human approves → main.** The human may be the PR author; a second person or separate account is not required. Passing CI alone never authorizes a production release.
 
-The complete, self-contained policy distributed to every repository is [templates/RELEASE_POLICY.md.template](templates/RELEASE_POLICY.md.template), installed as root `RELEASE_POLICY.md`. Read it before any release, deployment, environment, schema, or tag/package publication action. The short gate also lives in each repository's root `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and always-applied Cursor release rule.
+The complete, self-contained default policy is [templates/RELEASE_POLICY.md.template](templates/RELEASE_POLICY.md.template), installed as root `RELEASE_POLICY.md`. Read it before any release, deployment, environment, schema, or tag/package publication action. The short gate also lives in each repository's root `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and always-applied Cursor release rule.
 
-## 1. Branches
+## Registered website exception
+
+Only **`meavo-booths/office-phone-booths-uk`** skips staging. This separate website uses **feature → verify → stop and ask → one human approves → main**. Create its feature branch from `origin/main`, open the PR explicitly into `main`, and verify the feature checks/preview. Present the PR, current head SHA, changes and check results, then wait for explicit human approval; the PR author may approve. Recheck the approved head and required checks, merge with a merge commit, and verify production. Changed content requires renewed approval; unchanged retries may reuse valid approval.
+
+No staging branch or environment is required for this website. Direct pushes, bypasses, production shortcuts, and inferred or agent-authored approval remain prohibited. Its required `Release policy` check accepts only a nonempty, non-main source branch in the same repository; forks remain blocked. All other repositories, including this template repository, retain the staging procedure below.
+
+The exception is maintained in [the website templates](templates/repositories/meavo-booths/office-phone-booths-uk/). The synchronization tool selects it using the exact GitHub origin identity, never a directory name or a user-selectable generic exemption. An unknown repository does not gain this exception because staging is absent.
+
+## 1. Branches (default staging process)
 
 | Branch | Purpose | Agent workflow |
 |--------|---------|----------------|
@@ -81,9 +89,11 @@ python3 scripts/sync-release-policy.py /path/to/target-repo --check
 python3 /path/to/target-repo/scripts/verify-release-policy.py /path/to/target-repo
 ```
 
-The full bootstrap also installs the release policy. Existing customized agent documentation should be preserved while managed release blocks are refreshed. Never remove the policy as “N/A” for a library, documentation repository, legacy app, or new app.
+For a source archive without an origin remote, pass `--repository meavo-booths/office-phone-booths-uk` to select the registered website policy explicitly. An explicit identity must match an existing GitHub origin; an unknown/conflicting origin or lost identity on an installed exception fails before writing. Manifest identity/profile fields record policy selection and detect drift; they do not authorize releases. Runtime source validation uses the GitHub event repository identity.
 
-Commit policy updates on a feature branch and open a PR into `staging`. Installing these files does not itself change GitHub settings or authorize a main release. Updating the canonical default branch still requires the same human production gate.
+The full bootstrap also installs the selected release policy. Existing customized agent documentation should be preserved while managed release blocks are refreshed. Never remove the policy as “N/A” for a library, documentation repository, legacy app, or new app.
+
+Commit policy updates on a feature branch and open a PR into `staging`, except for the registered website, whose feature PR targets `main` and must wait for human approval before merging. Installing these files does not itself change GitHub settings or authorize a main release. Updating the canonical default branch still requires the same human production gate.
 
 ## 7. Repository coverage
 

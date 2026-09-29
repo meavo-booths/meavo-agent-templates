@@ -38,14 +38,15 @@ Run after filling templates in a target repo.
 ## Release safety
 
 - [ ] `python3 /path/to/meavo-agent-templates/scripts/sync-release-policy.py <target-repo> --check` passes
-- [ ] Feature/staging is the default; normal PRs explicitly target staging
-- [ ] Agents complete staging integration and verification, present the concrete release PR/head and results, then stop and ask before main
+- [ ] Exact GitHub repository identity is verified; only `meavo-booths/office-phone-booths-uk` selects the registered direct-to-main policy
+- [ ] Feature/staging is the default; normal PRs explicitly target staging. The registered website branches from main and opens feature PRs into main
+- [ ] Agents complete staging verification (feature/preview verification for the website), present the concrete release PR/head and results, then stop and ask before main
 - [ ] One human approval is sufficient, including from the PR author in chat or a human-authored PR comment; a contextual “yes” is valid
-- [ ] Main releases require that current, specific human approval and a staging-to-main merge commit
+- [ ] Main releases require that current, specific human approval and a merge commit from staging, or from a same-repository feature branch for the registered website
 - [ ] Main rules require zero formal GitHub reviews and disable latest-push approval; required PRs, checks, conversation resolution and no-bypass protections remain
 - [ ] No conflicting instruction authorizes direct pushes, inferred permission, auto-merge, production CLI shortcuts, or automatic tag/package publication
 - [ ] Actual GitHub protections and deployment-provider destinations are inspected; instruction files alone are not claimed as access control
-- [ ] Missing staging or unknown resource isolation stops the affected integration/write
+- [ ] Missing staging stops default integration; the registered website requires no staging. Unknown resource isolation stops the affected write in every repository
 
 ## Org standards (STANDARDS.md)
 

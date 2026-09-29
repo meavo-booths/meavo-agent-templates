@@ -10,7 +10,8 @@ Use this pack to bootstrap or refresh agent docs in any Meavo project (Next.js a
 |------|---------|
 | [STANDARDS.md](STANDARDS.md) | **Org-wide conventions** — unified database, UI (mobile + desktop), security, and architecture rules every repo must follow |
 | [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | **Branching & release workflow** — feature/staging by default; explicit human permission before production |
-| [templates/RELEASE_POLICY.md.template](templates/RELEASE_POLICY.md.template) | Complete mandatory release policy installed as root `RELEASE_POLICY.md` in every repository |
+| [templates/RELEASE_POLICY.md.template](templates/RELEASE_POLICY.md.template) | Default mandatory release policy installed as root `RELEASE_POLICY.md` |
+| [Website exception templates](templates/repositories/meavo-booths/office-phone-booths-uk/) | Only `meavo-booths/office-phone-booths-uk`: feature PRs directly into main, with human approval |
 | [PROMPT.md](PROMPT.md) | **Copy-paste prompt** for repo-specific agents to bootstrap their own instruction files |
 | [INSTRUCTIONS.md](INSTRUCTIONS.md) | **Start here** — human + agent workflow for adopting templates in a target repo |
 | [BOOTSTRAP.md](BOOTSTRAP.md) | Agent-only playbook: discover repo → fill templates → verify |
@@ -33,7 +34,9 @@ git clone https://github.com/meavo-booths/meavo-agent-templates.git
 python3 meavo-agent-templates/scripts/sync-release-policy.py /path/to/your-repo
 ```
 
-Make changes on a feature branch and open the PR explicitly into `staging`. After integrating and verifying staging, present the concrete release and stop for one human approval before `main`. The PR author may approve in chat or a human-authored PR comment; no second person or formal approving review is required. Follow [RELEASE_PROCESS.md](RELEASE_PROCESS.md). If staging is missing, report the setup gap and do not use main instead.
+For `meavo-booths/office-phone-booths-uk`, the sync tool automatically selects its registered direct-to-main policy from the GitHub origin. Create its feature branch from `origin/main` and open a PR into `main`; verify it and stop for one human approval before merging. No staging branch is required.
+
+For every other repository, make changes on a feature branch and open the PR explicitly into `staging`. After integrating and verifying staging, present the concrete release and stop for one human approval before `main`. The PR author may approve in chat or a human-authored PR comment; no second person or formal approving review is required. Follow [RELEASE_PROCESS.md](RELEASE_PROCESS.md). If staging is missing, report the setup gap and do not use main instead.
 
 Then open `AGENTS.md` and the `docs/` files and replace every `<!-- FILL: ... -->` block with repo-specific content. See [INSTRUCTIONS.md](INSTRUCTIONS.md) for the full workflow.
 
@@ -67,4 +70,4 @@ When you improve agent docs in one Meavo repo and the pattern is reusable:
 
 1. Generalize the improvement into a template here (keep placeholders).
 2. Open a feature PR to `meavo-agent-templates` targeting `staging`; a main release requires separate human permission.
-3. For release-policy changes, refresh every affected repository with `sync-release-policy.py` and submit staging PRs. Validate canonical copies with `--check`; do not overwrite customized documentation wholesale.
+3. For release-policy changes, refresh every affected repository with `sync-release-policy.py` and submit PRs targeting its installed policy base: staging by default, main only for the registered website (pending human release approval). Validate canonical copies with `--check`; do not overwrite customized documentation wholesale.

@@ -16,7 +16,7 @@ in THIS repo.
 1. Clone the template pack:
    git clone https://github.com/meavo-booths/meavo-agent-templates.git /tmp/meavo-agent-templates
 2. Read these files from it, in order:
-   - RELEASE_PROCESS.md — mandatory feature/staging workflow and specific human production permission.
+   - RELEASE_PROCESS.md — default staging workflow, registered website exception, and specific human production permission.
    - STANDARDS.md  — org-wide database, UI (mobile + desktop), and security rules. These are
                      CONSTANTS: copy the applicable ones into this repo's docs verbatim.
    - BOOTSTRAP.md  — your step-by-step playbook. Follow it exactly.
@@ -27,12 +27,17 @@ in THIS repo.
 
 ## Rules
 
-- Work on feat/, fix/, or chore/ from origin/staging and explicitly target staging in PRs.
-  Missing staging is not permission to push or merge main; report the setup gap.
+- Verify the exact GitHub origin. Only meavo-booths/office-phone-booths-uk is registered
+  for feature PRs directly into main: branch from origin/main, verify the feature/preview,
+  present the PR/head and checks, and stop for human approval before merging. No staging
+  branch is required. The sync tool must preserve that repository-specific policy.
+- All other repos: work on feat/, fix/, or chore/ from origin/staging and explicitly
+  target staging in PRs. Missing staging is not permission to use main; report the gap.
 - Preserve RELEASE_POLICY.md and every managed MEAVO RELEASE POLICY block verbatim.
   No repo type may mark these N/A. Production actions require a real human
   to approve this repository, exact action, and current reviewed PR/head SHA or artifact/configuration scope.
-  For a release, complete staging integration and verification, present the concrete PR/head, scope and checks,
+  For a release, complete staging integration and verification (feature/preview verification
+  for the registered website), present the concrete PR/head, scope and checks,
   then stop and ask for one human approval before main. The PR author may approve in chat or a human-authored
   PR comment; a clear “yes” to that specific request is sufficient. No second account or formal review is required.
   Changed head/scope needs fresh approval; an unchanged retry can reuse valid approval.
@@ -71,8 +76,9 @@ in THIS repo.
 ## Deliver
 
 Open a PR:
-- Branch: chore/agent-instruction-files from staging
-- Base: staging (set --base staging explicitly)
+- Branch: chore/agent-instruction-files from staging (main for the registered website only)
+- Base: staging (website: main); set --base explicitly. A website PR must remain unmerged
+  until explicit human approval of the reviewed head.
 - Title: "docs: add agent instruction files"
 - Body: list files added/updated, everything marked N/A or deleted (with reason),
   any deviations from STANDARDS.md, and the verify script output summary.

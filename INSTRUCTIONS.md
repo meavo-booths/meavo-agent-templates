@@ -1,13 +1,15 @@
 # Instructions — adopting agent docs in a Meavo repo
 
+**Branch selection:** The staging steps in this guide apply to all repositories except `meavo-booths/office-phone-booths-uk`. For that registered website, branch from `origin/main` and open the feature PR into `main`; verify the feature/preview, present the exact PR/head and results, and stop for one human approval before merging. The PR author may approve. No staging branch/environment is required. `sync-release-policy.py` selects its canonical overrides by the exact GitHub origin. This template repository itself still requires staging. See [RELEASE_PROCESS.md](RELEASE_PROCESS.md#registered-website-exception).
+
 Use this guide when adding or refreshing instruction files in any **meavo-booths** repository.
 
 ## Who does what
 
 | Role | Action |
 |------|--------|
-| **Human (repo owner)** | Review docs and give specific production permission after verified staging when a release is intended; the PR author may provide that decision |
-| **AI agent** | Follow [BOOTSTRAP.md](BOOTSTRAP.md), fill docs, and open a feature PR explicitly into `staging` |
+| **Human (repo owner)** | Review docs and give specific production permission after staging verification, or feature/preview verification for `meavo-booths/office-phone-booths-uk`, when a release is intended; the PR author may provide that decision |
+| **AI agent** | Follow [BOOTSTRAP.md](BOOTSTRAP.md), fill docs, and open a feature PR explicitly into `staging`, or `main` only for `meavo-booths/office-phone-booths-uk`; stop for human approval before merging into main |
 | **Org maintainer** | Keep templates in `meavo-agent-templates` generic and up to date |
 
 ## Step 1 — Bootstrap file skeleton
@@ -36,7 +38,7 @@ python3 /tmp/meavo-agent-templates/scripts/sync-release-policy.py .
 python3 /tmp/meavo-agent-templates/scripts/sync-release-policy.py . --check
 ```
 
-Work on `feat/`, `fix/`, or `chore/` from `staging` and set the PR base explicitly to `staging`. If staging is missing, report the setup gap rather than using main. See [RELEASE_PROCESS.md](RELEASE_PROCESS.md) before release or deployment work.
+Verify the exact GitHub origin before choosing a branch base. For `meavo-booths/office-phone-booths-uk`, work on `feat/`, `fix/`, or `chore/` from `origin/main` and set the PR base explicitly to `main`; no staging branch is required. For every other repository, branch from `origin/staging` and target `staging`. If staging is missing in those repositories, report the setup gap rather than using main. Opening a website PR needs no production approval; merging its verified head does. See [RELEASE_PROCESS.md](RELEASE_PROCESS.md) before release or deployment work.
 
 ## Step 2 — Read the org standards
 
@@ -111,7 +113,7 @@ Schema ownership (usually **meavo-db**), entity diagram, field notes agents can'
 
 ### 4.10 `CONTRIBUTING.md` (recommended)
 
-Branch naming, PR checklist, test expectations, cross-repo bump process. Preserve the mandatory production-permission block; normal PRs target staging.
+Branch naming, PR checklist, test expectations, cross-repo bump process. Preserve the mandatory production-permission block; normal PRs target staging, or main only for `meavo-booths/office-phone-booths-uk`. Human production approval is required before merging into main.
 
 ### 4.11 `.cursorignore` (recommended)
 
@@ -137,7 +139,7 @@ Run the automated checker from the target repo root, then the manual checklist:
 /tmp/meavo-agent-templates/scripts/verify-agent-docs.sh .
 ```
 
-Then run through [CHECKLIST.md](CHECKLIST.md). Open a PR explicitly targeting `staging`, titled e.g. `docs: add agent instruction files`. Production is a separate human-authorized action.
+Then run through [CHECKLIST.md](CHECKLIST.md). Open a PR explicitly targeting `staging`, or `main` only for the verified `meavo-booths/office-phone-booths-uk` repository, titled e.g. `docs: add agent instruction files`. Opening the PR is allowed; merging into main is a separate human-authorized action.
 
 ## Step 7 — Keep docs alive
 
@@ -173,6 +175,12 @@ Read meavo-booths/meavo-agent-templates BOOTSTRAP.md and STANDARDS.md, then boot
 Discover stack and layout from the codebase. Fill all <!-- FILL: --> placeholders.
 Apply org-wide rules from STANDARDS.md; mark any deviations explicitly.
 Keep the managed release-policy files and blocks intact. Do not copy repo-specific content
-from other Meavo repos. Open a feature PR explicitly into staging when done; no main release.
+from other Meavo repos. Verify the exact GitHub origin before choosing the feature branch and PR base:
+only meavo-booths/office-phone-booths-uk branches from origin/main and opens its feature PR into main;
+every other repository branches from origin/staging and opens its feature PR into staging.
+Opening a main PR for that website is allowed. After feature/preview verification, present its
+PR, current head SHA, scope and checks, then stop for one human approval before merging into main.
+For all other repositories, complete staging integration and verification before the same
+human approval checkpoint. The PR author may approve; do not infer approval from this bootstrap request.
 Run scripts/verify-agent-docs.sh and CHECKLIST.md to verify.
 ```
