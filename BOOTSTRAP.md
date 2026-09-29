@@ -1,16 +1,18 @@
 # BOOTSTRAP.md — agent playbook
 
+**Branch selection:** The staging steps in this guide apply to all repositories except `meavo-booths/office-phone-booths-uk`. For that registered website, branch from `origin/main` and open the feature PR into `main`; verify the feature/preview, present the exact PR/head and results, and stop for one human approval before merging. The PR author may approve. No staging branch/environment is required. `sync-release-policy.py` selects its canonical overrides by the exact GitHub origin. This template repository itself still requires staging. See [RELEASE_PROCESS.md](RELEASE_PROCESS.md#registered-website-exception).
+
 **Audience:** Cursor / Cloud agents bootstrapping instruction files in a meavo-booths repo.
 
 **Input:** Target repo checkout (the app you're working in, not `meavo-agent-templates`).
 
-**Output:** Filled agent docs, mandatory `RELEASE_POLICY.md` and managed entry-point blocks, policy verification tooling, and updated README links — as a feature PR explicitly targeting `staging`.
+**Output:** Filled agent docs, mandatory `RELEASE_POLICY.md` and managed entry-point blocks, policy verification tooling, and updated README links — as a feature PR explicitly targeting `staging`, or `main` only for `meavo-booths/office-phone-booths-uk`.
 
 ---
 
 ## Rules
 
-0. **Release safety is mandatory** — read [RELEASE_PROCESS.md](RELEASE_PROCESS.md). Work on feature branches and through staging PRs. After staging integration and verification, present the release PR/head, scope and checks, then stop and ask for one human approval before main. The PR author may approve in chat or a human-authored PR comment; a clear “yes” to the specific request is sufficient. No second account or formal approving review is required. Every production action needs explicit human permission for the repository, action, and current reviewed PR/head SHA or exact artifact/configuration scope. Never remove the managed release policy as N/A.
+0. **Release safety is mandatory** — read [RELEASE_PROCESS.md](RELEASE_PROCESS.md). Work on feature branches and use the installed policy's PR base: staging by default, main only for `meavo-booths/office-phone-booths-uk`. After staging integration and verification (feature/preview verification for that website), present the release PR/head, scope and checks, then stop and ask for one human approval before merging into main. The PR author may approve in chat or a human-authored PR comment; a clear “yes” to the specific request is sufficient. No second account or formal approving review is required. Every production action needs explicit human permission for the repository, action, and current reviewed PR/head SHA or exact artifact/configuration scope. Never remove the managed release policy as N/A.
 1. **Discover first, write second** — never guess paths or stack from sibling repos.
 2. **Org standards are constants** — read [STANDARDS.md](STANDARDS.md) and apply its database, UI, and security rules to every app repo; discovery fills the repo-specific blanks. If the repo deviates (older stack, no UI, schema owner), document the deviation explicitly.
 3. **General templates only** — source blanks from `meavo-booths/meavo-agent-templates`; do not clone `meavo-rp` docs wholesale.
@@ -25,7 +27,7 @@
 
 ### Phase A — Setup
 
-1. Confirm you're in the **target repo root** and inspect its remote/default/staging branches. Start a `feat/`, `fix/`, or `chore/` branch from `origin/staging`. If staging is absent, report missing setup and do not substitute a main PR; local feature work from the audited default branch may continue. Confirm preview isolation before pushing.
+1. Confirm you're in the **target repo root** and verify its exact GitHub origin and branches. For `meavo-booths/office-phone-booths-uk`, start a `feat/`, `fix/`, or `chore/` branch from `origin/main` and target `main` in the PR; no staging branch is required. For every other repository, start from `origin/staging` and target `staging`. If staging is absent in those repositories, report missing setup and do not substitute a main PR; local feature work from the audited default branch may continue. Confirm preview isolation before pushing.
 2. Fetch templates:
    - If `meavo-agent-templates` is not local: `git clone https://github.com/meavo-booths/meavo-agent-templates.git /tmp/meavo-agent-templates`
    - Run: `/tmp/meavo-agent-templates/scripts/bootstrap-agent-docs.sh .`
@@ -100,7 +102,7 @@ Also run `python3 /tmp/meavo-agent-templates/scripts/sync-release-policy.py . --
 Then before opening PR, verify:
 
 - [ ] Mandatory release policy and all managed blocks match the templates; release Cursor rule is always applied
-- [ ] Agents stop after verified staging, present the concrete release and wait for one human decision; the PR author may approve
+- [ ] Agents complete staging verification (feature/preview verification for `meavo-booths/office-phone-booths-uk`), present the concrete release and wait for one human decision before merging into main; the PR author may approve
 - [ ] GitHub main rules require zero formal approving reviews and no last-push approval, while preserving PRs, CI, conversation resolution and no-bypass protections
 - [ ] Production operations require human permission; no remaining instruction directs agents to release main unconditionally
 
@@ -115,15 +117,16 @@ Then before opening PR, verify:
 
 ### Phase E — PR
 
-- Branch: `chore/agent-instruction-files` from `staging`
-- Base: explicitly `staging` (`gh pr create --base staging --head chore/agent-instruction-files`)
+- Branch: `chore/agent-instruction-files` from `origin/staging`, or `origin/main` only for the verified `meavo-booths/office-phone-booths-uk` repository
+- Base for `meavo-booths/office-phone-booths-uk`: explicitly `main` (`gh pr create --base main --head chore/agent-instruction-files`); opening the PR is allowed, but merging requires human approval of its reviewed head
+- Base for every other repository: explicitly `staging` (`gh pr create --base staging --head chore/agent-instruction-files`)
 - Title: `docs: add agent instruction files`
 - Body: list files added/updated, note optional material marked N/A or skipped, link to CHECKLIST
-- Do not merge/auto-merge/queue to main or publish a production deployment as part of bootstrap. Missing staging requires setup, not a main exception.
+- Do not merge/auto-merge/queue to main or publish a production deployment as part of bootstrap. Missing staging requires setup for repositories using the default policy; the registered website instead prepares a main PR and waits for human approval.
 
 ---
 
-The release policy is never optional for any repo type. New repositories must install it, establish protected staging and main branches, and verify deployment isolation before integration/release work.
+The release policy is never optional for any repo type. New repositories must install it, establish protected staging and main branches, and verify deployment isolation before integration/release work. The existing registered website instead retains protected main and verified feature previews; this does not exempt new websites automatically.
 
 ## Repo-type hints
 
