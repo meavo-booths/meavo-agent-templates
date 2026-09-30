@@ -74,6 +74,8 @@ Schema changes belong in `meavo-db`. Because consumers may use different pinned 
 
 Auth callbacks, deployment protection, cross-app URLs, blob stores and staging URLs vary by project. Inspect the current configuration and document verified facts in that repository; historical settings are not organization-wide guarantees.
 
+[Development and staging guidance](AGENT_ENVIRONMENTS.md) covers auth variable scopes and callback diagnosis, database destinations, isolated storage, and deployment protection. Verify each project's current configuration instead of assuming all environments share the same settings. Distribute it with `scripts/sync-agent-instructions.py`; do not copy production credentials or disable protection based on documentation alone.
+
 ## 6. Distribution and verification
 
 From a checkout of this template repository:

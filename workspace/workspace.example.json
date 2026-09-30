@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "apps": {
+    "app-name": {"repo": "app-name/repo"}
+  },
+  "root_entries": ["AGENTS.md", "CLAUDE.md", "README.md", "_shared", ".cursor", ".claude", ".DS_Store"],
+  "checkouts": [
+    {"path": "app-name/repo", "app": "app-name", "kind": "repository", "common": "app-name/repo/.git"}
+  ],
+  "relocations": []
+}
