@@ -59,6 +59,7 @@ echo "Templates from: $TEMPLATES"
 echo ""
 
 copy_template "AGENTS.md.template" "AGENTS.md"
+copy_template "CLAUDE.md.template" "CLAUDE.md"
 copy_template "CONTRIBUTING.md.template" "CONTRIBUTING.md"
 copy_template ".cursorignore.template" ".cursorignore"
 copy_template ".cursor/rules/core.mdc.template" ".cursor/rules/core.mdc"
@@ -68,6 +69,7 @@ copy_template ".cursor/rules/ui.mdc.template" ".cursor/rules/ui.mdc"
 copy_template ".cursor/rules/security.mdc.template" ".cursor/rules/security.mdc"
 # Release controls are refreshed even when existing project docs are preserved.
 python3 "$SCRIPT_DIR/sync-release-policy.py" "$TARGET"
+python3 "$SCRIPT_DIR/sync-agent-instructions.py" "$TARGET"
 if [[ "$WITH_LEGACY" -eq 1 ]]; then
   copy_template ".cursor/rules/legacy.mdc.template" ".cursor/rules/legacy.mdc"
 fi

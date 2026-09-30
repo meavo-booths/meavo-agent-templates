@@ -71,3 +71,18 @@ When you improve agent docs in one Meavo repo and the pattern is reusable:
 1. Generalize the improvement into a template here (keep placeholders).
 2. Open a feature PR to `meavo-agent-templates` targeting `staging`; a main release requires separate human permission.
 3. For release-policy changes, refresh every affected repository with `sync-release-policy.py` and submit PRs targeting its installed policy base: staging by default, main only for the registered website (pending human release approval). Validate canonical copies with `--check`; do not overwrite customized documentation wholesale.
+
+## Workspace and Claude instructions
+
+Run `python3 scripts/sync-agent-instructions.py /path/to/app` to update the marked
+workspace block in AGENTS.md, preserve existing Claude notes while ensuring an
+active `@AGENTS.md` import, and install the Cursor workspace rule and environment
+guidance. Add `--check` to detect drift without writing. Release-policy blocks
+and each app's existing instructions are preserved; standalone and cloud clones
+do not require CursorDev paths. The full bootstrap runs both policy installers.
+
+Publish the resulting app changes through each repository's release process.
+Updating this pack does not automatically change existing app checkouts.
+The [workspace tools](workspace/README.md) contain the folder checker and
+worktree helper for a one-folder-per-app umbrella workspace. Machine-specific
+registries, migration journals, app code, secrets and task artifacts stay local.
