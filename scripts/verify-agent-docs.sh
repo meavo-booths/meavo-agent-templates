@@ -25,6 +25,11 @@ else
 fi
 echo ""
 echo "== Files exist =="
+if python3 "$SCRIPT_DIR/sync-agent-instructions.py" "$TARGET" --check; then
+  ok "portable workspace and Claude instructions match canonical templates"
+else
+  fail "agent instructions missing or stale; run scripts/sync-agent-instructions.py"
+fi
 
 [[ -f AGENTS.md ]] && ok "AGENTS.md" || fail "AGENTS.md missing"
 [[ -f .cursor/rules/core.mdc ]] && ok ".cursor/rules/core.mdc" || fail ".cursor/rules/core.mdc missing"
