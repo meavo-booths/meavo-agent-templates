@@ -39,6 +39,8 @@ gh pr create --base staging --head feat/add-invoice-filter
 
 Check the PR's actual repository, base and head. When required CI passes, squash-merge into `staging` and verify its deployment where applicable. Confirm the actual project and environment before writing to any service: a branch name or preview URL does not prove that its database, storage, or external integrations are isolated from production.
 
+Verify staging on the build that the Git integration created for the merged commit. The `<project>-git-staging-<team>.vercel.app` URL belongs to that integration and must never be assigned by hand: `vercel alias set` on it, `vercel deploy` or `vercel redeploy` from a `staging` checkout, or an API deployment with `staging` git metadata permanently detaches the URL from automatic updates, so every later staging build looks stale. If the URL lags, check the unique deployment URL of the READY `staging` build and report it; the human-approved repair is described in [AGENT_ENVIRONMENTS.md](AGENT_ENVIRONMENTS.md).
+
 ## 3. Production release
 
 An agent may prepare a release PR and its review evidence:
@@ -74,7 +76,7 @@ Schema changes belong in `meavo-db`. Because consumers may use different pinned 
 
 Auth callbacks, deployment protection, cross-app URLs, blob stores and staging URLs vary by project. Inspect the current configuration and document verified facts in that repository; historical settings are not organization-wide guarantees.
 
-[Development and staging guidance](AGENT_ENVIRONMENTS.md) covers auth variable scopes and callback diagnosis, database destinations, isolated storage, and deployment protection. Verify each project's current configuration instead of assuming all environments share the same settings. Distribute it with `scripts/sync-agent-instructions.py`; do not copy production credentials or disable protection based on documentation alone.
+[Development and staging guidance](AGENT_ENVIRONMENTS.md) covers auth variable scopes and callback diagnosis, database destinations, isolated storage, staging branch URLs, and deployment protection. Verify each project's current configuration instead of assuming all environments share the same settings. Distribute it with `scripts/sync-agent-instructions.py`; do not copy production credentials or disable protection based on documentation alone.
 
 ## 6. Distribution and verification
 
