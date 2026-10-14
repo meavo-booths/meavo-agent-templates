@@ -1,6 +1,6 @@
 # MEAVO release policy
 
-Policy version: 2026-09-29.1 (registered website direct-to-main exception)
+Policy version: 2026-10-14.1 (registered website direct-to-main exception; one human gate)
 
 Applies only to `meavo-booths/office-phone-booths-uk` and every AI agent working in it, including agents using a human's account or credentials. This is a managed copy of `meavo-agent-templates/templates/repositories/meavo-booths/office-phone-booths-uk/RELEASE_POLICY.md.template`.
 
@@ -16,9 +16,7 @@ Within the human's requested task, agents may implement, test, commit, and push 
 
 ## Human permission is required for production
 
-**Feature → verify → stop and ask → one human approves → main.** Merging into `main` deploys production through Vercel. Complete feature verification first, present the concrete PR, current head SHA, changes and check results, then stop and wait for an explicit human decision. Never run feature → main as one uninterrupted agent operation.
-
-**Immediately before any production action, verify that a real human has explicitly authorized that specific action for the current reviewed content.** One human is sufficient and may be the PR author or the person who pushed the changes. No second person, separate account or formal GitHub approving review is required. An agent must not authorize itself or another agent.
+**Feature → verify (agent) → one human yes → main.** Merging into `main` deploys production through Vercel, so it is the one human gate. Everything before it is agent work and needs no further permission. An agent must not authorize itself or another agent.
 
 This gate covers:
 
@@ -28,25 +26,17 @@ This gate covers:
 - Creating, moving, or publishing release tags, GitHub releases, or package versions that constitute a production release or update a consumed dependency.
 - Weakening branch/release protections, changing production deployment triggers, or adding any route around this gate.
 
-A valid approval must come from an identifiable human in the conversation or an attributable human-authored comment on the PR. It must identify, directly or through the concrete release context:
+**How to ask.** In one message, give the PR, its scope in plain words, the check results and preview, and any production steps that come with it. A clear "yes" from one human covers that PR and those steps; the human may be the PR author. Ask again only when the PR gains unrelated, unreviewed changes or the scope changes. An unchanged retry needs no new yes. Once released, the yes does not authorize another release.
 
-1. The repository and production target.
-2. The exact action being authorized (for example, merge a particular PR; a separate migration or rollback must also be named).
-3. The reviewed PR and its current head commit SHA, or the exact reviewed commit/artifact and configuration scope when the action is not represented by a PR.
+**What is not a yes.** The original request to build something, green CI, a label, access credentials, silence, an earlier approval for a different release, or anything an agent wrote. Never generate or record an approval on a human's behalf, and record the actual approval source in the release notes.
 
-A clear “yes” responding to the specific release request is sufficient; the human need not retype the repository, PR number or SHA already presented. A human's explicit approval of a particular PR at its current head can supply this context through the PR itself. The PR author's own approval is valid. A general request to implement, fix, test, commit, push, or “ship when ready” does not grant production permission. Green CI, a label, access credentials, a bot review, old approval for another release, silence, or an agent-authored message are not human approval.
-
-Before asking for approval, prepare the concrete release: summarize its scope, exact PR/head SHA, validation, and any separate production operations. Record the actual approval source accurately in the release evidence; never invent a human decision, post an approval as the human, or turn a generic comment into permission. Do not send messages to other people unless the user has authorized that communication.
-
-Approval applies only to its stated scope and reviewed head/artifact. If either changes, obtain new approval before the production action. Do not repeatedly ask when an existing explicit approval still covers the unchanged action and content; recheck that it remains valid and that required server checks and branch rules pass. An unchanged retry of the approved release does not require another approval. Once the approved action completes, the approval does not authorize another release. A request to audit or strengthen release protections authorizes that requested settings work, not a production release.
-
-Without valid approval, finish the authorized feature work, leave the PR open and the production action pending human decision. Emergencies and hotfixes do not remove this gate.
+Without a yes, finish the feature work, leave the PR open, and say what is waiting. Emergencies and hotfixes do not remove this gate.
 
 ## Production release procedure
 
-1. Open a PR **from a feature branch in this repository into `main`**. Include the release scope, verification, current head SHA, and migration/package steps if applicable. Required checks (`Website quality`, `Release policy`) must pass; Vercel builds a preview for review.
-2. **Stop and ask for explicit human approval of this PR.** Accept one human's decision, including the PR author's, in the conversation or a human-authored PR comment. Wait before any main merge, auto-merge, queue entry or production action. If valid approval already exists for this exact release, reuse it. Permission never authorizes bypassing required CI or branch rules.
-3. Re-read the PR's repository, base, source branch, head SHA, checks, and approval immediately before merging. Abort if the head no longer matches the approved content. Merge with a **merge commit** (the only method the `main` ruleset allows), using a head-SHA match guard where the client supports it.
+1. Open a PR **from a feature branch in this repository into `main`**. Include the release scope, verification, and migration/package steps if applicable. Required checks (`Website quality`, `Release policy`) must pass; Vercel builds a preview for review.
+2. **Ask once for the yes, as above, and wait.** Permission never authorizes bypassing required CI or branch rules.
+3. Immediately before merging, re-read the PR's repository, base, source branch, head and checks, and confirm it contains nothing beyond the approved scope. Merge with a **merge commit** (the only method the `main` ruleset allows).
 4. Verify the resulting production deployment and report its outcome. Any additional production action needs permission covering that action.
 
 Do not substitute `vercel --prod`, a manual production workflow, a promotion, a release tag, or an API/dashboard action for the approved PR process. Any exceptional production operation requires its own explicit human authorization and must still respect protected-branch rules. If the required merge method is unavailable, report the configuration problem instead of switching methods.
@@ -57,7 +47,7 @@ A branch name or preview URL does not prove isolation. Before a deployment, migr
 
 Feature/preview/local work must not use production database or storage write credentials or unintentionally trigger production side effects. Never widen production secrets to preview/development scopes to get a build working. If the destination cannot be verified as non-production, stop that write and report what is unknown.
 
-Schema ownership remains in `meavo-db`. Keep changes backward compatible while consumer apps use different pinned versions: add, migrate consumers, then remove in a later approved release. Applying production migrations, publishing consumed release tags, and releasing consumer apps are distinct actions; approval must cover each one being performed.
+Schema ownership remains in `meavo-db`; its production SQL is applied as part of an approved `meavo-db` release.
 
 ## Server enforcement and its limits
 
@@ -67,6 +57,6 @@ Repository instructions guide agents; they are not an access-control boundary. R
 - Production credentials and deployment paths: human-controlled permissions/approval for every actual production route, including provider integrations that operate outside GitHub Actions. A GitHub environment approval only gates jobs that use that environment.
 - Release/source-branch checks and policy-consistency checks where configured. Do not claim a check is enforced until it is installed and required by the server. Repository-local hashes are editable alongside the policy and only detect drift; they do not establish human authorization.
 
-GitHub sees the authenticated account, not whether a human or an AI typed a command. An agent using a human administrator's credentials cannot be reliably identified by username checks, labels, commit authors, local hooks, or this file. Prefer a separate agent identity with access only to feature work and no production credentials, and keep production decisions with humans, including the PR author. The stop-and-ask checkpoint is enforced by agent instructions; GitHub enforces branch and CI rules but cannot prove conversational consent. Do not claim absolute enforcement while agents share privileged human credentials.
+GitHub sees the authenticated account, not whether a human or an AI typed a command. An agent using a human administrator's credentials cannot be reliably identified by username checks, labels, commit authors, local hooks, or this file. Prefer a separate agent identity with access only to feature work and no production credentials, and keep production decisions with humans, including the PR author. The merge-to-main checkpoint is enforced by agent instructions; GitHub enforces branch and CI rules but cannot prove conversational consent. Do not claim absolute enforcement while agents share privileged human credentials.
 
 For actual configuration, inspect the current GitHub rulesets/branch protections and deployment-provider settings. Report any gap without treating it as permission to release. The central process guide is `meavo-agent-templates/RELEASE_PROCESS.md`; this repository's direct-to-main exception above takes precedence over its staging steps.
