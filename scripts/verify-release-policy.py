@@ -3,9 +3,10 @@
 
 The manifest detects drift; it is not proof of human authorization. GitHub must
 require this check and branch protections without a bypass on main. Agents must
-separately stop after verified staging (or feature verification for the explicitly
-listed website exception) and obtain one human decision, including from the PR
-author; formal GitHub approval is not required or verified here.
+separately obtain one human yes for each release bundle merged into main (from
+staging, or from a feature branch for the explicitly listed website exception);
+the PR author may give it, and formal GitHub approval is not required or verified
+here.
 """
 
 import argparse

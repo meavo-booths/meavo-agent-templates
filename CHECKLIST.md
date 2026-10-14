@@ -40,11 +40,11 @@ Run after filling templates in a target repo.
 - [ ] `python3 /path/to/meavo-agent-templates/scripts/sync-release-policy.py <target-repo> --check` passes
 - [ ] Exact GitHub repository identity is verified; only `meavo-booths/office-phone-booths-uk` selects the registered direct-to-main policy
 - [ ] Feature/staging is the default; normal PRs explicitly target staging. The registered website branches from main and opens feature PRs into main
-- [ ] Agents complete staging verification (feature/preview verification for the website), present the concrete release PR/head and results, then stop and ask before main
+- [ ] Agents integrate into staging without asking (squash-merge or auto-merge when green), then list the release bundle and ask once before main
 - [ ] One human approval is sufficient, including from the PR author in chat or a human-authored PR comment; a contextual “yes” is valid
-- [ ] Main releases require that current, specific human approval and a merge commit from staging, or from a same-repository feature branch for the registered website
+- [ ] Main releases require that human yes and a merge commit from staging, or from a same-repository feature branch for the registered website; the yes also covers the bundle's release tag and production SQL
 - [ ] Main rules require zero formal GitHub reviews and disable latest-push approval; required PRs, checks, conversation resolution and no-bypass protections remain
-- [ ] No conflicting instruction authorizes direct pushes, inferred permission, auto-merge, production CLI shortcuts, or automatic tag/package publication
+- [ ] No conflicting instruction authorizes direct pushes, inferred permission, auto-merge into main, production CLI shortcuts, or tag/package publication outside an approved release
 - [ ] Actual GitHub protections and deployment-provider destinations are inspected; instruction files alone are not claimed as access control
 - [ ] Missing staging stops default integration; the registered website requires no staging. Unknown resource isolation stops the affected write in every repository
 

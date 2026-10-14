@@ -178,9 +178,9 @@ Keep the managed release-policy files and blocks intact. Do not copy repo-specif
 from other Meavo repos. Verify the exact GitHub origin before choosing the feature branch and PR base:
 only meavo-booths/office-phone-booths-uk branches from origin/main and opens its feature PR into main;
 every other repository branches from origin/staging and opens its feature PR into staging.
-Opening a main PR for that website is allowed. After feature/preview verification, present its
-PR, current head SHA, scope and checks, then stop for one human approval before merging into main.
-For all other repositories, complete staging integration and verification before the same
-human approval checkpoint. The PR author may approve; do not infer approval from this bootstrap request.
+Opening a main PR for that website is allowed. The only human gate is the merge into main:
+agents work freely up to staging (or a verified feature PR for the website), then list the
+release PRs with scope, checks and production steps and wait for one human yes covering the bundle.
+The PR author may approve; do not infer approval from this bootstrap request.
 Run scripts/verify-agent-docs.sh and CHECKLIST.md to verify.
 ```

@@ -1,12 +1,12 @@
 # MEAVO branching and release process
 
-By default, AI agents may complete authorized work on feature branches and through PRs into `staging`. **Every production action requires explicit permission from a human for the repository, the specific action, and the current reviewed PR/head SHA or exact artifact/configuration scope.** **Feature → staging → stop and ask → one human approves → main.** The human may be the PR author; a second person or separate account is not required. Passing CI alone never authorizes a production release.
+**The only human gate is the merge from `staging` into `main`.** **Feature → staging (agent) → release PR → one human yes → main.** Everything before that merge is agent work and needs no further permission: feature branches, PRs into `staging`, squash-merging or auto-merging them when green, writes to verified staging resources, re-pins to approved tags, release PRs, and read-only production queries through the guarded helper. One yes covers a whole release bundle, including its release tag and production SQL. The human may be the PR author; a second person or separate account is not required. Passing CI alone never authorizes a production release.
 
 The complete, self-contained default policy is [templates/RELEASE_POLICY.md.template](templates/RELEASE_POLICY.md.template), installed as root `RELEASE_POLICY.md`. Read it before any release, deployment, environment, schema, or tag/package publication action. The short gate also lives in each repository's root `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and always-applied Cursor release rule.
 
 ## Registered website exception
 
-Only **`meavo-booths/office-phone-booths-uk`** skips staging. This separate website uses **feature → verify → stop and ask → one human approves → main**. Create its feature branch from `origin/main`, open the PR explicitly into `main`, and verify the feature checks/preview. Present the PR, current head SHA, changes and check results, then wait for explicit human approval; the PR author may approve. Recheck the approved head and required checks, merge with a merge commit, and verify production. Changed content requires renewed approval; unchanged retries may reuse valid approval.
+Only **`meavo-booths/office-phone-booths-uk`** skips staging. This separate website uses **feature → verify (agent) → one human yes → main**. Create its feature branch from `origin/main`, open the PR explicitly into `main`, and verify the feature checks/preview. Give the PR, its scope and check results in one message and wait for one human yes; the PR author may approve. Recheck required checks and scope, merge with a merge commit, and verify production. Ask again only if the PR gains unrelated changes.
 
 No staging branch or environment is required for this website. Direct pushes, bypasses, production shortcuts, and inferred or agent-authored approval remain prohibited. Its required `Release policy` check accepts only a nonempty, non-main source branch in the same repository; forks remain blocked. All other repositories, including this template repository, retain the staging procedure below.
 
@@ -37,9 +37,9 @@ git push -u origin feat/add-invoice-filter
 gh pr create --base staging --head feat/add-invoice-filter
 ```
 
-Check the PR's actual repository, base and head. When required CI passes, squash-merge into `staging` and verify its deployment where applicable. Confirm the actual project and environment before writing to any service: a branch name or preview URL does not prove that its database, storage, or external integrations are isolated from production.
+Check the PR's actual repository, base and head. When required CI passes, squash-merge into `staging` (or enable auto-merge) without asking, and verify its deployment where applicable. Staging database scripts, staging data fixes and other writes to verified staging resources are also agent work. Confirm the actual project and environment before writing to any service: a branch name or preview URL does not prove that its database, storage, or external integrations are isolated from production.
 
-Verify staging on the build that the Git integration created for the merged commit. The `<project>-git-staging-<team>.vercel.app` URL belongs to that integration and must never be assigned by hand: `vercel alias set` on it, `vercel deploy` or `vercel redeploy` from a `staging` checkout, or an API deployment with `staging` git metadata permanently detaches the URL from automatic updates, so every later staging build looks stale. If the URL lags, check the unique deployment URL of the READY `staging` build and report it; the human-approved repair is described in [AGENT_ENVIRONMENTS.md](AGENT_ENVIRONMENTS.md).
+Verify staging on the build that the Git integration created for the merged commit. The `<project>-git-staging-<team>.vercel.app` URL belongs to that integration and must never be assigned by hand: `vercel alias set` on it, `vercel deploy` or `vercel redeploy` from a `staging` checkout, or an API deployment with `staging` git metadata permanently detaches the URL from automatic updates, so every later staging build looks stale. If the URL lags, check the unique deployment URL of the READY `staging` build, and repair the URL as described in [AGENT_ENVIRONMENTS.md](AGENT_ENVIRONMENTS.md); the repair only affects staging and needs no approval.
 
 ## 3. Production release
 
@@ -49,11 +49,13 @@ An agent may prepare a release PR and its review evidence:
 gh pr create --base main --head staging --title "Release: <scope>"
 ```
 
-Complete staging integration and verification first. Present the exact release PR/head SHA, release scope, checks, staging result, and any separate migration/package/environment operations; **stop and ask for one human approval before main**. Accept the PR author's own decision in the conversation or a human-authored PR comment. A clear “yes” responding to that specific request is sufficient; a formal approving review, another person or another account is not required. Wait for that decision before merging, enabling auto-merge, queueing, or invoking any other production path. Never infer it from the original implementation request, green CI, silence, or an agent-authored approval.
+When several repositories release together (for example `meavo-db` + `meavo-gateway` + `sales`), open every release PR first and **ask once for the whole bundle**: list each repository and PR, the scope in plain words, check results, the staging result, any commit on `staging` that is not part of the requested work, and the production steps that come with it (for example "tag `v0.91.0` and apply `scripts/x.sql` to production"). Accept the PR author's own decision in the conversation or a human-authored PR comment. A clear “yes” covers the whole bundle; a formal approving review, another person or another account is not required. Never infer it from the original implementation request, green CI, silence, or an agent-authored message.
 
-Recheck the repository, `staging` source, `main` base, approved head SHA, and approval immediately before acting. Changed content or scope needs new human approval; an existing approval for the unchanged verified staging release remains valid without asking again, including when retrying a failed merge command. Confirm required server checks and branch rules pass. Never generate an approval on the human's behalf. Use a merge commit and a head-SHA match guard where available. Never squash or rebase the staging-to-main release.
+The yes also covers later commits that only re-pin a dependency to the approved tag. Ask again only if `staging` gains unrelated, unreviewed changes or the scope changes; an unchanged retry needs no new yes. Immediately before each merge, recheck the repository, `staging` source, `main` base and checks, and that nothing outside the approved scope arrived. Use a merge commit. Never squash or rebase the staging-to-main release.
 
-The same permission gate covers production redeployments, promotions, rollbacks, domain aliases, environment changes, schema/data operations, release tags, and package publication. Do not use `vercel --prod`, an API/dashboard action, a release tag, or a manual workflow to evade the PR process. Explicit permission for a main merge does not silently authorize a separate production operation.
+Order for a schema release: merge the `meavo-db` release, tag its merge commit, apply its SQL to production with `scripts/apply-sql.sh production` (host- and checksum-checked, from the tag), re-pin consumers to the tag through `staging`, then merge the consumer releases. Verify each production deployment.
+
+Production actions outside a release PR (redeploys, promotions, rollbacks, domain aliases, environment/secret changes, production data fixes) each need their own yes. Do not use `vercel --prod`, an API/dashboard action, or a manual workflow to evade the PR process.
 
 ## 4. Required enforcement
 
@@ -62,7 +64,7 @@ Required configuration and deployed configuration are distinct. Inspect live rul
 - `main`: PRs, passing required checks, resolved review conversations, staging-only source, merge commits for releases, and no direct/force pushes, deletion or bypass actors. Set `required_approving_review_count: 0` and `require_last_push_approval: false`. GitHub prohibits formal PR self-approval; these settings permit the author to supply the separate human consent that agents must obtain.
 - `staging`: PRs and required checks; no direct/force pushes or deletion.
 - Production deployment paths and credentials: human-controlled approval and access at the provider as well as GitHub. A GitHub environment gate covers only jobs that use that environment; it does not automatically gate a separate Git integration.
-- Policy and source-branch validation: install the managed policy verifier/workflow and make its check required where supported. It catches missing or altered policy and wrong release source branches; it cannot prove a human supplied permission. A repository-local hash manifest is editable in the same PR and is only a drift check. The post-staging human-consent checkpoint is enforced by agent instructions, while GitHub enforces branch and CI rules. Zero required formal reviews does not give an agent permission to release.
+- Policy and source-branch validation: install the managed policy verifier/workflow and make its check required where supported. It catches missing or altered policy and wrong release source branches; it cannot prove a human supplied permission. A repository-local hash manifest is editable in the same PR and is only a drift check. The staging → main human checkpoint is enforced by agent instructions, while GitHub enforces branch and CI rules. Zero required formal reviews does not give an agent permission to release.
 
 Agents using a human's credentials look like that human to GitHub and deployment providers. Instructions, commit authors, labels and local hooks cannot solve that identity problem. Prefer separate limited agent credentials and human control of production. The author can provide that human decision; separate limited agent credentials improve identity separation but are not a second-human requirement. Do not weaken a gate to make an agent's release possible.
 
@@ -70,9 +72,9 @@ CI commands and required status names must match each repository. `Typecheck` is
 
 ## 5. Environment and schema safety
 
-Verify actual destinations before deployment, migration, seed, or other writes. Preview/staging/local environments must use non-production resources; check provider scopes and local `.env` files without exposing secret values. Never broaden production database or storage credentials to preview/development. If a destination is unknown, stop that write and report the gap.
+Verify actual destinations before deployment, migration, seed, or other writes. Preview/staging/local environments must use non-production resources; check provider scopes and local `.env` files without exposing secret values. Never broaden production database or storage credentials to preview/development. If a destination is unknown, stop that write and report the gap. Some staging integrations talk to real external systems (for example Sales staging uses the real Xero organisation); from staging, never create, change or delete records there.
 
-Schema changes belong in `meavo-db`. Because consumers may use different pinned tags, changes must remain backward compatible: add, migrate all consumers, then remove in a later approved release. Applying production migrations, publishing consumed tags/packages, and deploying consumer apps are separate approval scopes.
+Schema changes belong in `meavo-db`. Because consumers may use different pinned tags, changes must remain backward compatible: add, migrate all consumers, then remove in a later release. SQL scripts are transactional and idempotent; agents apply them to staging (twice, to prove reruns are safe) with `scripts/apply-sql.sh staging`. Production application, the release tag and consumer re-pins are part of the approved `meavo-db` release bundle, not separate approvals.
 
 Auth callbacks, deployment protection, cross-app URLs, blob stores and staging URLs vary by project. Inspect the current configuration and document verified facts in that repository; historical settings are not organization-wide guarantees.
 
@@ -97,7 +99,7 @@ For a source archive without an origin remote, pass `--repository meavo-booths/o
 
 The full bootstrap also installs the selected release policy. Existing customized agent documentation should be preserved while managed release blocks are refreshed. Never remove the policy as “N/A” for a library, documentation repository, legacy app, or new app.
 
-Commit policy updates on a feature branch and open a PR into `staging`, except for the registered website, whose feature PR targets `main` and must wait for human approval before merging. Installing these files does not itself change GitHub settings or authorize a main release. Updating the canonical default branch still requires the same human production gate.
+Commit policy updates on a feature branch and open a PR into `staging`, except for the registered website, whose feature PR targets `main` and waits for the human yes before merging. Installing these files does not itself change GitHub settings or authorize a main release. Releasing the canonical default branch goes through the same staging → main gate; a policy roll-out across repositories is one release bundle.
 
 ## 7. Repository coverage
 

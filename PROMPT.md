@@ -34,14 +34,13 @@ in THIS repo.
 - All other repos: work on feat/, fix/, or chore/ from origin/staging and explicitly
   target staging in PRs. Missing staging is not permission to use main; report the gap.
 - Preserve RELEASE_POLICY.md and every managed MEAVO RELEASE POLICY block verbatim.
-  No repo type may mark these N/A. Production actions require a real human
-  to approve this repository, exact action, and current reviewed PR/head SHA or artifact/configuration scope.
-  For a release, complete staging integration and verification (feature/preview verification
-  for the registered website), present the concrete PR/head, scope and checks,
-  then stop and ask for one human approval before main. The PR author may approve in chat or a human-authored
-  PR comment; a clear “yes” to that specific request is sufficient. No second account or formal review is required.
-  Changed head/scope needs fresh approval; an unchanged retry can reuse valid approval.
-  Never infer or manufacture approval, enable production auto-merge, queue a main PR, or bypass protections.
+  No repo type may mark these N/A. The only human gate is the merge into main.
+  Agents integrate into staging without asking (squash-merge or auto-merge when green) and may write
+  to verified staging resources. For a release, list every release PR in the bundle with its scope,
+  checks and production steps (release tag, production SQL) and wait for one human yes, which covers
+  the bundle. The PR author may approve in chat or a human-authored PR comment; no second account or
+  formal review is required. Ask again only if staging gains unrelated changes.
+  Never infer or manufacture approval, enable auto-merge into main, queue a main PR, or bypass protections.
 - DISCOVER FIRST, WRITE SECOND. Read package.json, README, src/ layout, auth code,
   vercel.json, and .env.example before writing any prose. Never guess paths, and never
   copy another Meavo repo's paths, sheet columns, or business rules.
