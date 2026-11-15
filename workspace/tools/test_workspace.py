@@ -97,6 +97,166 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(guide.read_text().count('@AGENTS.md'), 1)
         self.assertEqual(workspace.check(), [])
 
+    # --- retire ---------------------------------------------------------
+
+    def worktree(self):
+        self.assertEqual(self.create().returncode, 0)
+        return self.root / 'meavo-assembly/worktrees/sample-task'
+
+    def test_retire_removes_checkout_and_registry_row_but_keeps_branch_and_output(self):
+        p = self.worktree()
+        (p / 'feature.txt').write_text('work\n')
+        workspace.git(p, 'add', 'feature.txt')
+        workspace.git(p, 'commit', '-m', 'Task work')
+        result = self.cli('retire', 'meavo-assembly', 'sample-task')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(p.exists())
+        self.assertEqual(len(workspace.registry()['checkouts']), 1)
+        self.assertEqual(workspace.check(), [])
+        self.assertIn('feat/sample-task', workspace.git(self.repo, 'branch', '--list', 'feat/sample-task'))
+        self.assertTrue((self.root / 'meavo-assembly/output/sample-task').is_dir())
+
+    def test_retire_dry_run_changes_nothing(self):
+        p = self.worktree()
+        result = self.cli('retire', 'meavo-assembly', 'sample-task', '--dry-run')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue((p / 'AGENTS.md').exists())
+        self.assertEqual(len(workspace.registry()['checkouts']), 2)
+
+    def test_retire_refuses_to_lose_uncommitted_untracked_or_ignored_files(self):
+        p = self.worktree()
+        (p / 'README.md').write_text('edited\n')
+        refused = self.cli('retire', 'meavo-assembly', 'sample-task', '--preserve')
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('README.md', refused.stderr)
+        workspace.git(p, 'checkout', '--', 'README.md')
+        (p / 'notes.txt').write_text('keep me\n')
+        (p / '.gitignore').write_text('.env\nnode_modules/\n')
+        workspace.git(p, 'add', '.gitignore')
+        workspace.git(p, 'commit', '-m', 'Ignore rules')
+        (p / '.env').write_text('SECRET=1\n')
+        (p / 'node_modules').mkdir()
+        (p / 'node_modules/pkg.js').write_text('rebuildable\n')
+        refused = self.cli('retire', 'meavo-assembly', 'sample-task')
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('notes.txt', refused.stderr)
+        self.assertIn('.env', refused.stderr)
+        self.assertNotIn('node_modules', refused.stderr)
+        self.assertTrue((p / 'notes.txt').exists())
+        self.assertEqual(workspace.check(), [])
+
+    def test_retire_with_preserve_copies_files_to_the_task_output(self):
+        p = self.worktree()
+        (p / '.gitignore').write_text('.env\n')
+        workspace.git(p, 'add', '.gitignore')
+        workspace.git(p, 'commit', '-m', 'Ignore rules')
+        (p / 'docs').mkdir()
+        (p / 'docs/notes.txt').write_text('keep me\n')
+        (p / '.env').write_text('SECRET=1\n')
+        result = self.cli('retire', 'meavo-assembly', 'sample-task', '--preserve')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        store = self.root / 'meavo-assembly/output/sample-task/retired-checkout'
+        self.assertEqual((store / 'docs/notes.txt').read_text(), 'keep me\n')
+        self.assertEqual((store / '.env').read_text(), 'SECRET=1\n')
+        self.assertFalse(p.exists())
+        self.assertEqual(workspace.check(), [])
+
+    def test_retire_rejects_unknown_tasks_and_the_canonical_repository(self):
+        self.assertNotEqual(self.cli('retire', 'meavo-assembly', 'missing-task').returncode, 0)
+        self.assertNotEqual(self.cli('retire', 'meavo-assembly', '../repo').returncode, 0)
+        self.assertTrue((self.repo / '.git').exists())
+
+    # --- refresh --------------------------------------------------------
+
+    def remote(self):
+        """Give the fixture a bare origin plus a second clone that plays GitHub."""
+        self.outside = tempfile.TemporaryDirectory(prefix='workspace-remote-test-')
+        self.addCleanup(self.outside.cleanup)
+        origin = Path(self.outside.name) / 'origin.git'
+        subprocess.run(['git', 'init', '--bare', '-b', 'staging', str(origin)], check=True, capture_output=True)
+        workspace.git(self.repo, 'remote', 'add', 'origin', str(origin))
+        workspace.git(self.repo, 'push', '--quiet', '-u', 'origin', 'staging')
+        other = Path(self.outside.name) / 'other'
+        subprocess.run(['git', 'clone', '--quiet', str(origin), str(other)], check=True, capture_output=True)
+        workspace.git(other, 'config', 'user.name', 'Workspace Test')
+        workspace.git(other, 'config', 'user.email', 'workspace-test@example.invalid')
+        return other
+
+    def publish(self, other, name, text, message='Upstream change'):
+        (other / name).write_text(text)
+        workspace.git(other, 'add', name)
+        workspace.git(other, 'commit', '-m', message)
+        workspace.git(other, 'push', '--quiet', 'origin', 'HEAD')
+
+    def test_refresh_fast_forwards_past_installer_files_and_reinstalls_them(self):
+        other = self.remote()
+        # Upstream does not carry the workspace guidance; locally the installer adds it uncommitted.
+        for name in ('CLAUDE.md', 'AGENT_ENVIRONMENTS.md', '.cursor/rules/workspace-layout.mdc'):
+            workspace.git(other, 'rm', '--quiet', name)
+        (other / 'AGENTS.md').write_text('# App guide\n')
+        workspace.git(other, 'add', 'AGENTS.md')
+        workspace.git(other, 'commit', '-m', 'Plain guide')
+        workspace.git(other, 'push', '--quiet', 'origin', 'HEAD')
+        self.assertIn('updated', self.cli('refresh', 'meavo-assembly').stdout)
+        self.assertIn(' M AGENTS.md', subprocess.run(['git', '-C', str(self.repo), 'status', '--porcelain'],
+                                                     capture_output=True, text=True).stdout)
+        self.publish(other, 'AGENTS.md', '# App guide\nMore upstream text.\n')
+        self.publish(other, 'CLAUDE.md', '# Upstream Claude notes\n')
+        result = self.cli('refresh', 'meavo-assembly')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('updated', result.stdout)
+        self.assertEqual(workspace.git(self.repo, 'rev-parse', 'HEAD'), workspace.git(other, 'rev-parse', 'HEAD'))
+        guide = (self.repo / 'AGENTS.md').read_text()
+        self.assertIn('More upstream text.', guide)
+        self.assertIn(workspace.MARKER, guide)
+        self.assertIn('# Upstream Claude notes', (self.repo / 'CLAUDE.md').read_text())
+        self.assertEqual(workspace.check(), [])
+        self.assertIn('already level', self.cli('refresh').stdout)
+
+    def test_refresh_leaves_checkout_untouched_when_local_work_conflicts(self):
+        other = self.remote()
+        self.publish(other, 'README.md', 'upstream\n')
+        (self.repo / 'README.md').write_text('my local edit\n')
+        before = workspace.git(self.repo, 'rev-parse', 'HEAD')
+        dry = self.cli('refresh', '--dry-run')
+        self.assertIn('would fast-forward 1 commit', dry.stdout)
+        result = self.cli('refresh')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('left as it was', result.stdout)
+        self.assertEqual(workspace.git(self.repo, 'rev-parse', 'HEAD'), before)
+        self.assertEqual((self.repo / 'README.md').read_text(), 'my local edit\n')
+        self.assertEqual(workspace.check(), [])
+
+    def test_refresh_only_leaves_a_side_branch_when_its_pull_request_is_merged(self):
+        other = self.remote()
+        self.publish(other, 'README.md', 'upstream\n')
+        workspace.git(self.repo, 'switch', '--quiet', '-c', 'feat/old-task')
+        (self.repo / 'task.txt').write_text('task\n')
+        workspace.git(self.repo, 'add', 'task.txt')
+        workspace.git(self.repo, 'commit', '-m', 'Old task')
+        self.assertIn('left: branch feat/old-task is not on GitHub', self.cli('refresh').stdout)
+        self.assertEqual(workspace.git(self.repo, 'symbolic-ref', '--short', 'HEAD'), 'feat/old-task')
+        original = workspace.merged_pull_request
+        try:
+            workspace.merged_pull_request = lambda path, branch: False
+            self.assertIn('no merged pull request', workspace.refresh_checkout('meavo-assembly', self.repo, True))
+            workspace.merged_pull_request = lambda path, branch: branch == 'feat/old-task'
+            outcome = workspace.refresh_checkout('meavo-assembly', self.repo, True)
+        finally:
+            workspace.merged_pull_request = original
+        self.assertIn('local branch feat/old-task is kept', outcome)
+        self.assertEqual(workspace.git(self.repo, 'symbolic-ref', '--short', 'HEAD'), 'staging')
+        self.assertEqual((self.repo / 'README.md').read_text(), 'upstream\n')
+        self.assertIn('feat/old-task', workspace.git(self.repo, 'branch', '--list', 'feat/old-task'))
+        self.assertEqual(workspace.check(), [])
+
+    def test_local_edits_inside_managed_files_are_not_treated_as_installer_output(self):
+        guide = self.repo / 'AGENTS.md'
+        guide.write_text(guide.read_text() + '\nMy own unpublished rule.\n')
+        managed, changed, untracked, ignored = workspace.local_state(self.repo)
+        self.assertEqual(managed, [])
+        self.assertEqual(changed, ['M AGENTS.md'])
+
 
 if __name__ == '__main__':
     unittest.main()
