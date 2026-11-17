@@ -10,6 +10,7 @@ Use this pack to bootstrap or refresh agent docs in any Meavo project (Next.js a
 |------|---------|
 | [STANDARDS.md](STANDARDS.md) | **Org-wide conventions** — unified database, UI (mobile + desktop), security, and architecture rules every repo must follow |
 | [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | **Branching & release workflow** — feature/staging by default; explicit human permission before production |
+| [NEXTJS_16_MOVE.md](NEXTJS_16_MOVE.md) | **Moving an app from Next.js 15.5 to 16** — why, the two interim rules about Server Actions, and the per-app steps |
 | [templates/RELEASE_POLICY.md.template](templates/RELEASE_POLICY.md.template) | Default mandatory release policy installed as root `RELEASE_POLICY.md` |
 | [Website exception templates](templates/repositories/meavo-booths/office-phone-booths-uk/) | Only `meavo-booths/office-phone-booths-uk`: feature PRs directly into main, with human approval |
 | [PROMPT.md](PROMPT.md) | **Copy-paste prompt** for repo-specific agents to bootstrap their own instruction files |
